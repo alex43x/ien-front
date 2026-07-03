@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, CheckCircle2, AlertCircle, Heart, Package, Scan, ChevronLeft } from "lucide-react";
 
 const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", soft: "#FAEAB0", text: "#7A5800" },
+  yellow: { color: "#D9A030", bg: "#FEF7E0", border: "#F0D080", soft: "#FAEAB0", text: "#7A5800" },
   green:  { color: "#4DAAA0", bg: "#E6F5F3", soft: "#B8E8E2", text: "#1E6860" },
   red:    { color: "#E96B6B", bg: "#FAEAEA", soft: "#F8D0D0", text: "#8A2828" },
 };

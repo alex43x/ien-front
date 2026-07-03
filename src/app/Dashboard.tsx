@@ -32,7 +32,7 @@ const BLOCKS = [
 ];
 
 const TODAY = 12;
-const ACTIVE = BLOCKS.find((b) => TODAY >= b.start && TODAY <= b.end)!;
+const ACTIVE = BLOCKS.find((b) => TODAY >= b.start && TODAY <= b.end) ?? BLOCKS[0];
 const tone = C[ACTIVE.tone];
 
 const READING = {

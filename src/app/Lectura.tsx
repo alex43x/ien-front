@@ -35,7 +35,7 @@ export default function Lectura() {
   const navigate = useNavigate();
   const [scrollPct, setScrollPct] = useState(0);
   const [timeLeft, setTimeLeft] = useState(READING.tiempoMin * 60);
-  const [timerRunning] = useState(true);
+  const timerRunning = true;
   const contentRef = useRef<HTMLDivElement>(null);
   const tone = C[READING.tono];
 
