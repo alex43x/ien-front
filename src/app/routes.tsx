@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import Dashboard from "./Dashboard";
+import AdminDashboard from "./AdminDashboard";
 import Login from "./Login";
 import Register from "./Register";
 import Bienvenida from "./Bienvenida";
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
   { path: "/bienvenida", element: <Bienvenida /> },
   { path: "/activar",    element: <Activar /> },
   { path: "/dashboard",  element: <Dashboard /> },
+  { path: "/admin",      element: <AdminDashboard /> },
   { path: "/lectura",    element: <Lectura /> },
   { path: "/preguntas",  element: <Preguntas /> },
 ]);
