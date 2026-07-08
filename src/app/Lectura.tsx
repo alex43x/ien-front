@@ -1,43 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft, Clock, ArrowRight, BookOpen, ShieldCheck } from "lucide-react";
-
-const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", soft: "#FAEAB0", text: "#7A5800" },
-  green:  { color: "#4DAAA0", bg: "#E6F5F3", soft: "#B8E8E2", text: "#1E6860" },
-  red:    { color: "#E96B6B", bg: "#FAEAEA", soft: "#F8D0D0", text: "#8A2828" },
-};
-
-const READING = {
-  bloque: 3,
-  dia: 12,
-  tono: "red" as const,
-  titulo: "La diferencia entre gestionar y reprimir",
-  cita: "Entre el estímulo y la respuesta hay un espacio. En ese espacio reside nuestra libertad y nuestra capacidad de elegir.",
-  autor: "Viktor Frankl",
-  tiempoMin: 4,
-  paragraphs: [
-    "Cuando sentimos el impulso de comer sin hambre real, solemos actuar en piloto automático. El estímulo llega —aburrimiento, estrés, soledad— y la respuesta ocurre casi sin darnos cuenta. Buscamos comida no porque el cuerpo lo necesite, sino porque la mente necesita alivio.",
-    "La clave no está en suprimir ese impulso. Eso sería represión, y la represión no funciona: la emoción que empujamos hacia adentro regresa con más fuerza, habitualmente a través del cuerpo — un atracón, una noche sin dormir, una explosión de ira en el momento menos esperado.",
-    "Gestionar, en cambio, significa algo distinto. Significa reconocer la emoción, darle un nombre: «Estoy sintiendo ansiedad ahora mismo». Este simple acto de nombrar —en neurociencia se llama affect labeling— reduce de manera automática la intensidad de la emoción. No la resuelve, pero crea el espacio que Viktor Frankl describe: el espacio donde vive tu libertad.",
-    "La técnica STOP es una herramienta sencilla para construir esa pausa consciente entre el estímulo y la respuesta:",
-  ],
-  lista: [
-    { letra: "S", palabra: "Stop", desc: "Detente físicamente. Pon los pies en el suelo." },
-    { letra: "T", palabra: "Take a breath", desc: "Respira una sola vez, lento y profundo." },
-    { letra: "O", palabra: "Observe", desc: "Observa qué estás sintiendo sin juzgarlo." },
-    { letra: "P", palabra: "Proceed with awareness", desc: "Decide con conciencia qué quieres hacer." },
-  ],
-  cierre: "No se trata de tener fuerza de voluntad infinita. Se trata de ensanchar ese espacio donde vive tu libertad. Cada vez que practicas la pausa, ese espacio crece un poco más.",
-};
+import { C } from "@/constants/colors";
+import { READING_DIA_12 } from "@/content/readings";
 
 export default function Lectura() {
   const navigate = useNavigate();
   const [scrollPct, setScrollPct] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(READING.tiempoMin * 60);
+  const [timeLeft, setTimeLeft] = useState(READING_DIA_12.tiempoMin * 60);
   const timerRunning = true;
   const contentRef = useRef<HTMLDivElement>(null);
-  const tone = C[READING.tono];
+  const tone = C[READING_DIA_12.tono];
 
   // Scroll progress
   useEffect(() => {
@@ -76,10 +49,10 @@ export default function Lectura() {
               <ShieldCheck size={11} style={{ color: tone.color }} />
             </div>
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">
-              Bloque {READING.bloque} · Día {READING.dia}
+              Bloque {READING_DIA_12.bloque} · Día {READING_DIA_12.dia}
             </p>
           </div>
-          <p className="text-sm font-semibold text-[#3E3A38] truncate mt-0.5">{READING.titulo}</p>
+          <p className="text-sm font-semibold text-[#3E3A38] truncate mt-0.5">{READING_DIA_12.titulo}</p>
         </div>
         <div className="flex items-center gap-1.5 text-xs font-mono flex-shrink-0"
           style={{ color: timeLeft > 0 ? C.yellow.color : C.green.color }}>
@@ -103,26 +76,26 @@ export default function Lectura() {
               <BookOpen size={13} style={{ color: tone.color }} />
             </div>
             <span className="text-xs font-mono font-semibold" style={{ color: tone.text }}>
-              Lectura del día — {READING.tiempoMin} minutos
+              Lectura del día — {READING_DIA_12.tiempoMin} minutos
             </span>
           </div>
 
           {/* Title */}
           <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38] leading-tight mb-6">
-            {READING.titulo}
+            {READING_DIA_12.titulo}
           </h1>
 
           {/* Pull quote */}
           <div className="rounded-2xl p-5 mb-8" style={{ backgroundColor: tone.bg, borderLeft: `4px solid ${tone.color}` }}>
             <p className="font-['Lora'] text-lg italic text-[#3E3A38] leading-relaxed">
-              "{READING.cita}"
+              "{READING_DIA_12.cita}"
             </p>
-            <p className="text-sm font-mono mt-3" style={{ color: tone.text }}>— {READING.autor}</p>
+            <p className="text-sm font-mono mt-3" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
           </div>
 
           {/* Body */}
           <div className="space-y-5 mb-8">
-            {READING.paragraphs.map((p, i) => (
+            {READING_DIA_12.paragraphs.map((p, i) => (
               <p key={i} className="text-base text-[#4A4644] leading-relaxed" style={{ fontFamily: "'Lora', serif" }}>{p}</p>
             ))}
           </div>
@@ -131,7 +104,7 @@ export default function Lectura() {
           <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-8">
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">La técnica STOP</p>
             <div className="space-y-3">
-              {READING.lista.map((item) => (
+              {READING_DIA_12.lista.map((item) => (
                 <div key={item.letra} className="flex items-start gap-4">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
                     style={{ backgroundColor: tone.soft, color: tone.color }}>
@@ -148,7 +121,7 @@ export default function Lectura() {
 
           {/* Closing */}
           <p className="text-base font-['Lora'] italic text-[#4A4644] leading-relaxed mb-10">
-            {READING.cierre}
+            {READING_DIA_12.cierre}
           </p>
 
           {/* CTA */}

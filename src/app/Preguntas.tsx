@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft, ChevronRight, CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { C } from "@/constants/colors";
 
-const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", soft: "#FAEAB0", text: "#7A5800" },
-  green:  { color: "#4DAAA0", bg: "#E6F5F3", soft: "#B8E8E2", text: "#1E6860" },
-  red:    { color: "#E96B6B", bg: "#FAEAEA", soft: "#F8D0D0", text: "#8A2828" },
-};
 const TONO = "red" as const;
 const tone = C[TONO];
 
@@ -83,7 +79,6 @@ export default function Preguntas() {
             "Conocerse es el principio de toda sabiduría." — Aristóteles
           </p>
 
-          {/* Summary */}
           <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 text-left mb-6">
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Resumen · Día 12 · Bloque 3</p>
             <div className="space-y-3">
@@ -184,7 +179,6 @@ export default function Preguntas() {
 
           {q.type === "scale" && (
             <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-6">
-              {/* Scale buttons */}
               <div className="flex gap-2 justify-between mb-4">
                 {Array.from({ length: q.steps }).map((_, i) => {
                   const val = i + 1;

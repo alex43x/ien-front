@@ -4,44 +4,21 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
-  Brain, Flame, Users, Sparkles, ShieldCheck, HeartHandshake,
   CheckCircle2, Clock, Heart, Package, Activity, TrendingUp,
   BookOpen, Send, ChevronDown, ChevronUp, Bell,
 } from "lucide-react";
-
-// ─── Brand palette (from IEN logo) ───────────────────────────────────────────
-
-const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", border: "#F0D080", soft: "#FAEAB0", text: "#7A5800" },
-  green:  { color: "#4DAAA0", bg: "#E6F5F3", border: "#80CFC5", soft: "#B8E8E2", text: "#1E6860" },
-  red:    { color: "#E96B6B", bg: "#FAEAEA", border: "#EFA8A8", soft: "#F8D0D0", text: "#8A2828" },
-} as const;
-type Tone = keyof typeof C;
-
-const GRAY = { base: "#3E3A38", mid: "#7A7270", light: "#E8E4E2", faint: "#F7F5F4" };
+import { C, GRAY } from "@/constants/colors";
+import { BLOCKS } from "@/constants/program";
+import { READING_DIA_12 } from "@/content/readings";
+import type { Tone } from "@/constants/colors";
+import { Tag } from "@/components/ui/Tag";
+import { AdherBar } from "@/components/ui/AdherBar";
 
 // ─── Program data ─────────────────────────────────────────────────────────────
-
-const BLOCKS = [
-  { id: 1, start: 1,  end: 5,  title: "Autoconciencia",   icon: Brain,          tone: "yellow" as Tone },
-  { id: 2, start: 6,  end: 10, title: "Autoconfianza",    icon: Sparkles,       tone: "green"  as Tone },
-  { id: 3, start: 11, end: 15, title: "Autocontrol",      icon: ShieldCheck,    tone: "red"    as Tone },
-  { id: 4, start: 16, end: 20, title: "Automotivación",   icon: Flame,          tone: "yellow" as Tone },
-  { id: 5, start: 21, end: 25, title: "Empatía",          icon: HeartHandshake, tone: "green"  as Tone },
-  { id: 6, start: 26, end: 30, title: "Comp. Social",     icon: Users,          tone: "red"    as Tone },
-];
 
 const TODAY = 12;
 const ACTIVE = BLOCKS.find((b) => TODAY >= b.start && TODAY <= b.end) ?? BLOCKS[0];
 const tone = C[ACTIVE.tone];
-
-const READING = {
-  cita: "Entre el estímulo y la respuesta hay un espacio. En ese espacio reside nuestra libertad.",
-  autor: "Viktor Frankl",
-  titulo: "La diferencia entre gestionar y reprimir",
-  cuerpo: "Reprimir significa empujar la emoción hacia adentro, negarla. A corto plazo funciona, pero regresa con más fuerza. Gestionar, en cambio, significa reconocer la emoción, nombrarla, y decidir conscientemente cómo responder. Al nombrarla, el cerebro reduce automáticamente su intensidad — un fenómeno llamado «affect labeling» con respaldo en neurociencia.",
-  pregunta: "¿Hay alguna emoción que sueles reprimir en lugar de reconocer? ¿Qué sientes ahora mismo, exactamente?",
-};
 
 const SUPPLEMENTS = [
   { product: "Omega-3 Concentrado",  brand: "Cardiosmile",    dose: "1 sobre · desayuno", tone: "red"   as Tone, icon: Heart },
@@ -63,28 +40,6 @@ const MOOD = [
 const pct = Math.round(((TODAY - 1) / 30) * 100);
 const r = 36;
 const circ = 2 * Math.PI * r;
-
-// ─── Small helpers ────────────────────────────────────────────────────────────
-
-function Tag({ children, tone: t }: { children: React.ReactNode; tone: Tone }) {
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold"
-      style={{ backgroundColor: C[t].soft, color: C[t].text }}>
-      {children}
-    </span>
-  );
-}
-
-function AdherBar({ v, t }: { v: number; t: Tone }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex-1 h-1 rounded-full" style={{ backgroundColor: GRAY.light }}>
-        <div className="h-full rounded-full" style={{ width: `${v}%`, backgroundColor: C[t].color }} />
-      </div>
-      <span className="text-[10px] font-mono" style={{ color: C[t].color }}>{v}%</span>
-    </div>
-  );
-}
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -142,9 +97,9 @@ export default function Dashboard() {
                 </div>
               </div>
               <p className="font-['Lora'] text-sm italic text-[#4A4644] leading-relaxed">
-                "{READING.cita}"
+                "{READING_DIA_12.cita}"
               </p>
-              <p className="text-xs font-mono mt-1" style={{ color: tone.text }}>— {READING.autor}</p>
+              <p className="text-xs font-mono mt-1" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
             </div>
             <div className="mt-4 flex gap-2">
               <button
@@ -345,7 +300,7 @@ export default function Dashboard() {
                 <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: tone.text }}>Lectura del día {TODAY}</p>
                 <Tag tone={ACTIVE.tone}>{ACTIVE.title}</Tag>
               </div>
-              <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">{READING.titulo}</p>
+              <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">{READING_DIA_12.titulo}</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               {saved && <div className="flex items-center gap-1 text-xs font-mono" style={{ color: C.green.color }}>
@@ -364,10 +319,10 @@ export default function Dashboard() {
                 {/* Text */}
                 <div>
                   <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
-                    <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">"{READING.cita}"</p>
-                    <p className="text-xs font-mono mt-2" style={{ color: tone.text }}>— {READING.autor}</p>
+                    <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">"{READING_DIA_12.cita}"</p>
+                    <p className="text-xs font-mono mt-2" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
                   </div>
-                  <p className="text-sm text-[#4A4644] leading-relaxed">{READING.cuerpo}</p>
+                  <p className="text-sm text-[#4A4644] leading-relaxed">{READING_DIA_12.cuerpo}</p>
                 </div>
 
                 {/* Question */}
@@ -375,7 +330,7 @@ export default function Dashboard() {
                   <div className="flex items-start gap-3 mb-3">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 mt-0.5"
                       style={{ backgroundColor: tone.soft, color: tone.text }}>1</span>
-                    <p className="text-sm font-medium text-[#3E3A38] leading-snug">{READING.pregunta}</p>
+                    <p className="text-sm font-medium text-[#3E3A38] leading-snug">{READING_DIA_12.pregunta}</p>
                   </div>
                   {saved ? (
                     <div className="rounded-xl p-4 text-sm text-[#4A4644] leading-relaxed"

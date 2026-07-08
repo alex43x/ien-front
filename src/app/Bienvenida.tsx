@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Brain, HeartHandshake, ShieldCheck, Flame, Sparkles, Users, ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { C } from "@/constants/colors";
+import { BLOCKS } from "@/constants/program";
 
 // ─── Typewriter hook ──────────────────────────────────────────────────────────
 function useTypewriter(lines: string[], speed = 38, pauseBetween = 520) {
@@ -35,39 +37,6 @@ function useTypewriter(lines: string[], speed = 38, pauseBetween = 520) {
 
   return { displayed, done };
 }
-
-const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", soft: "#FAEAB0", text: "#7A5800" },
-  green:  { color: "#4DAAA0", bg: "#E6F5F3", soft: "#B8E8E2", text: "#1E6860" },
-  red:    { color: "#E96B6B", bg: "#FAEAEA", soft: "#F8D0D0", text: "#8A2828" },
-};
-
-const BLOCKS = [
-  {
-    id: 1, title: "Autoconciencia", icon: Brain, tone: "yellow" as const, days: "1–5",
-    desc: "Aprende a reconocer tus señales internas y distinguir entre el hambre fisiológica y el hambre emocional. El primer paso hacia el cambio es observarte sin juzgarte.",
-  },
-  {
-    id: 2, title: "Autoconfianza", icon: Sparkles, tone: "green" as const, days: "6–10",
-    desc: "Reconstruye tu identidad dejando atrás la historia del 'dietante fallido'. Aquí te conviertes en el protagonista de tu propia historia de cambio.",
-  },
-  {
-    id: 3, title: "Autocontrol", icon: ShieldCheck, tone: "red" as const, days: "11–15",
-    desc: "Crea un espacio entre el estímulo y la respuesta. Aprenderás a gestionar los impulsos sin reprimirlos, usando la Pausa Poderosa como herramienta diaria.",
-  },
-  {
-    id: 4, title: "Automotivación", icon: Flame, tone: "yellow" as const, days: "16–20",
-    desc: "Ancla el cambio en tus valores más profundos. Pasarás del 'tengo que' al 'quiero', descubriendo la motivación intrínseca que no depende de factores externos.",
-  },
-  {
-    id: 5, title: "Empatía", icon: HeartHandshake, tone: "green" as const, days: "21–25",
-    desc: "Trátate con la misma amabilidad que ofreces a quienes amas. La autocompasión es la herramienta más poderosa para sostener el cambio a largo plazo.",
-  },
-  {
-    id: 6, title: "Competencia Social", icon: Users, tone: "red" as const, days: "26–30",
-    desc: "Mantén tus hábitos frente a la presión del entorno. Aprenderás a disfrutar y celebrar en contextos sociales sin culpa y sin renunciar a tu bienestar.",
-  },
-];
 
 const INTERVAL = 3200;
 
@@ -148,7 +117,6 @@ export default function Bienvenida() {
               <span className="block">{displayed[0]}</span>
               <span className="block" style={{ color: C.yellow.color }}>
                 {displayed[1]}
-                {/* blinking cursor */}
                 {!typeDone && (
                   <span
                     className="inline-block w-0.5 h-9 ml-1 rounded-full align-middle"
@@ -273,7 +241,7 @@ export default function Bienvenida() {
                       </div>
                       <div>
                         <p className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: tone.text }}>
-                          Bloque {block.id} · Días {block.days}
+                          Bloque {block.id} · Días {block.start}–{block.end}
                         </p>
                         <h2 className="font-['Lora'] text-2xl font-semibold text-[#3E3A38]">{block.title}</h2>
                       </div>

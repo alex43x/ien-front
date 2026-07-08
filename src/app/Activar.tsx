@@ -1,14 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, CheckCircle2, AlertCircle, Heart, Package, Scan, ChevronLeft } from "lucide-react";
+import { C } from "@/constants/colors";
 
-const C = {
-  yellow: { color: "#D9A030", bg: "#FEF7E0", border: "#F0D080", soft: "#FAEAB0", text: "#7A5800" },
-  green:  { color: "#4DAAA0", bg: "#E6F5F3", soft: "#B8E8E2", text: "#1E6860" },
-  red:    { color: "#E96B6B", bg: "#FAEAEA", soft: "#F8D0D0", text: "#8A2828" },
-};
-
-// Simulated product catalog
 const PRODUCTS: Record<string, { name: string; brand: string; desc: string; tone: "red" | "green"; icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }> }> = {
   "1001": { name: "Omega-3 Concentrado",    brand: "Cardiosmile",    desc: "Cuidado cardiovascular · 1 sobre diario con el desayuno",      tone: "red",   icon: Heart },
   "1002": { name: "CoQ10 + Magnesio",       brand: "Cardiosmile",    desc: "Soporte cardiovascular · 1 cápsula diaria con la cena",         tone: "red",   icon: Heart },
@@ -118,7 +112,7 @@ export default function Activar() {
             <div className="flex items-center gap-1 mb-3">
               <div className="flex-1 text-center">
                 <div className="h-11 rounded-xl flex items-center justify-center text-lg font-mono font-bold tracking-widest border-2"
-                  style={{ backgroundColor: C.yellow.bg, borderColor: C.yellow.border ?? C.yellow.soft, color: C.yellow.color }}>
+                  style={{ backgroundColor: C.yellow.bg, borderColor: C.yellow.border, color: C.yellow.color }}>
                   XXXX
                 </div>
                 <p className="text-[10px] font-mono mt-1.5" style={{ color: C.yellow.text }}>Punto de venta</p>
