@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { C } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
+import { useAuth } from "../context/AuthContext";
 
 // ─── Typewriter hook ──────────────────────────────────────────────────────────
 function useTypewriter(lines: string[], speed = 38, pauseBetween = 520) {
@@ -42,12 +43,14 @@ const INTERVAL = 3200;
 
 export default function Bienvenida() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const [direction, setDirection] = useState(1);
   const [allSeen, setAllSeen] = useState(false);
+  const nombre = user?.nombre || "";
   const { displayed, done: typeDone } = useTypewriter(
-    ["Bienvenida,", "Gladys."],
+    ["Hola,", `${nombre}.`],
     42,
     340,
   );
@@ -167,7 +170,7 @@ export default function Bienvenida() {
 
             {/* CTA */}
             <motion.button
-              onClick={() => navigate("/activar")}
+              onClick={() => navigate("/dashboard")}
               initial={{ opacity: 0, y: 10 }}
               animate={typeDone ? { opacity: allSeen ? 1 : 0.4, y: 0 } : { opacity: 0, y: 10 }}
               transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
@@ -180,11 +183,11 @@ export default function Bienvenida() {
               }}
               disabled={!allSeen}
             >
-              Activar mis productos
+              Ir al programa
               <ArrowRight size={16} />
             </motion.button>
             <p className="text-xs text-[#7A7270] font-mono mt-2">
-              {allSeen ? "Necesitarás el código del envase" : "Explora todos los bloques para continuar"}
+              {allSeen ? "Empieza tu recorrido de 30 días" : "Explora todos los bloques para continuar"}
             </p>
           </motion.div>
 

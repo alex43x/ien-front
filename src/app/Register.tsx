@@ -1,62 +1,35 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound, Scan } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound } from "lucide-react";
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [codigoActivacion, setCodigoActivacion] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email || !password || !confirmPassword || !codigoActivacion) {
+    if (!name || !email || !password || !confirmPassword) {
       setError("Completa todos los campos.");
-      setSuccess("");
       return;
     }
 
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
-      setSuccess("");
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
-      setSuccess("");
       return;
     }
 
-    setError("");
-    setSuccess("");
-    setLoading(true);
-
-    try {
-      await register({
-        nombre: name,
-        email,
-        password,
-        codigo_activacion: codigoActivacion
-      });
-      setSuccess("Cuenta creada exitosamente.");
-      // Redirect to bienvenida because they are now authenticated
-      // (Or let PublicRoute handle the redirect to dashboard, but let's go to bienvenida)
-      navigate("/bienvenida");
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Error al crear la cuenta.");
-      setLoading(false);
-    }
+    navigate("/activar", { state: { nombre: name, email, password } });
   };
 
   return (
@@ -153,22 +126,6 @@ export default function Register() {
 
               <div>
                 <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
-                  Código de Activación
-                </label>
-                <div className="relative">
-                  <Scan size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
-                  <input
-                    type="text"
-                    value={codigoActivacion}
-                    onChange={(e) => setCodigoActivacion(e.target.value)}
-                    placeholder="XXXX-XXXX"
-                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-4 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -219,25 +176,12 @@ export default function Register() {
                 </p>
               )}
 
-              {success && (
-                <p className="rounded-2xl bg-[#E6F5F3] px-3 py-2 text-xs font-medium text-[#4DAAA0]">
-                  {success}
-                </p>
-              )}
-
               <button
                 type="submit"
-                disabled={loading}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3E3A38] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#3E3A38]/15 transition-all hover:-translate-y-0.5 hover:bg-[#2F2B29] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3E3A38] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#3E3A38]/15 transition-all hover:-translate-y-0.5 hover:bg-[#2F2B29]"
               >
-                {loading ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                ) : (
-                  <>
-                    Crear cuenta
-                    <ArrowRight size={15} />
-                  </>
-                )}
+                Crear cuenta
+                <ArrowRight size={15} />
               </button>
             </form>
 

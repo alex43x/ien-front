@@ -90,7 +90,7 @@ export default function Login() {
               <div className="mb-4 inline-flex items-center rounded-full border border-[#E7DDCF] bg-[#FEF7E0] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#D9A030]">
                 Acceso seguro
               </div>
-              <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38]">Bienvenida de nuevo</h1>
+              <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38]">Hola de nuevo</h1>
               <p className="mt-2 text-sm leading-6 text-[#7A7270]">
                 Ingresa para continuar tu recorrido con un entorno claro, cálido y pensado para ti.
               </p>

@@ -28,11 +28,11 @@ export const router = createBrowserRouter([
       { path: "/register", element: <Register /> },
     ],
   },
+  { path: "/activar", element: <Activar /> },
   {
     element: <ProtectedRoute />,
     children: [
       { path: "/bienvenida", element: <Bienvenida /> },
-      { path: "/activar", element: <Activar /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/lectura", element: <Lectura /> },
       { path: "/preguntas", element: <Preguntas /> },
