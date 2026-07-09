@@ -132,7 +132,7 @@ export default function AdminPatientDetail() {
             <div className="mt-4 grid grid-cols-10 sm:grid-cols-15 gap-2">
               {Array.from({ length: 30 }, (_, i) => {
                 const dayNum = i + 1;
-                const completed = progress.progreso_diario?.some((d: any) => d.dia === dayNum && d.completado);
+                const completed = progress.progreso_diario?.some((d: any) => d.dia_numero === dayNum && d.completado);
                 const isCurrent = dayNum === progress.dia_actual;
                 return (
                   <div
