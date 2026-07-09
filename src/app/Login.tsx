@@ -27,7 +27,7 @@ export default function Login() {
       // pero por si acaso o si queremos forzar ir a bienvenida:
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al iniciar sesión.");
+      setError(err.response?.data?.error || "Error al iniciar sesión.");
       setLoading(false);
     }
   };

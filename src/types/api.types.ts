@@ -28,9 +28,7 @@ export interface AuthResponse {
 
 // Plan
 export interface RespuestaTest {
-  pregunta_id: string;
-  texto: string;
-  respuesta_elegida: string;
+  numero: number;
   score: number;
 }
 
@@ -45,19 +43,36 @@ export interface SetupTestResponse {
   estado: string;
 }
 
+export interface DatosLeccion {
+  cita?: string;
+  autor?: string;
+  cuerpo?: string;
+  pregunta?: string;
+  [key: string]: any;
+}
+
+export interface Leccion {
+  dia_actual: number;
+  titulo: string;
+  tipo: string;
+  emociones_objetivo: string[];
+  respuesta_tipo: string;
+  datos_leccion: DatosLeccion;
+}
+
 export interface TodayPlanResponse {
-  actividad_completada_hoy: boolean;
+  leccion: Leccion | null;
+}
+
+export interface PlanProfileResponse {
   dia_actual: number;
   racha_dias: number;
   racha_maxima: number;
   estado: 'activo' | 'completado' | 'abandonado';
-  // If not completed today:
-  titulo?: string;
-  tipo?: string;
-  emociones_objetivo?: string[];
-  datos_leccion?: any; // You can type this more strictly if needed
-  // If completed today:
-  mensaje?: string;
+  actividad_completada_hoy: boolean;
+  fecha_inicio: string;
+  dias_completados: number;
+  dias_totales: number;
 }
 
 export interface CompleteDayResponse {

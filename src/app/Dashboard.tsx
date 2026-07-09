@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -9,16 +9,14 @@ import {
 } from "lucide-react";
 import { C, GRAY } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
-import { READING_DIA_12 } from "@/content/readings";
 import type { Tone } from "@/constants/colors";
 import { Tag } from "@/components/ui/Tag";
 import { AdherBar } from "@/components/ui/AdherBar";
+import { useAuth } from "../context/AuthContext";
+import { planService } from "../services/plan.service";
+import type { Leccion, PlanProfileResponse } from "../types/api.types";
 
-// ─── Program data ─────────────────────────────────────────────────────────────
-
-const TODAY = 12;
-const ACTIVE = BLOCKS.find((b) => TODAY >= b.start && TODAY <= b.end) ?? BLOCKS[0];
-const tone = C[ACTIVE.tone];
+// ─── Static data (supplements & mood chart stay as-is) ────────────────────────
 
 const SUPPLEMENTS = [
   { product: "Omega-3 Concentrado",  brand: "Cardiosmile",    dose: "1 sobre · desayuno", tone: "red"   as Tone, icon: Heart },
@@ -37,21 +35,73 @@ const MOOD = [
   { dia: "D", bien: 8, ansi: 2, ener: 9 },
 ];
 
-const pct = Math.round(((TODAY - 1) / 30) * 100);
 const r = 36;
 const circ = 2 * Math.PI * r;
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-import { useAuth } from "../context/AuthContext";
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // Plan state
+  const [leccion, setLeccion] = useState<Leccion | null>(null);
+  const [profile, setProfile] = useState<PlanProfileResponse | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [planError, setPlanError] = useState<string | null>(null);
+  const [completando, setCompletando] = useState(false);
+  const [hitoAlcanzado, setHitoAlcanzado] = useState<number | null>(null);
+
+  // UI state
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [answer, setAnswer] = useState("");
-  const [saved, setSaved] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setPlanLoading(true);
+        const [todayData, profileData] = await Promise.all([
+          planService.getTodayPlan(),
+          planService.getProfile(),
+        ]);
+        setLeccion(todayData.leccion);
+        setProfile(profileData);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setPlanError("no_plan");
+        } else {
+          setPlanError("error");
+        }
+      } finally {
+        setPlanLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleCompleteDay = async () => {
+    if (completando) return;
+    setCompletando(true);
+    try {
+      const result = await planService.completeDay(answer.trim() || undefined);
+      setHitoAlcanzado(result.hito_alcanzado);
+      const profileData = await planService.getProfile();
+      setProfile(profileData);
+      setLeccion(null);
+    } catch (_) {
+      // 409 = already completed today
+    } finally {
+      setCompletando(false);
+    }
+  };
+
+  // Derived display values
+  const TODAY = profile?.dia_actual ?? 1;
+  const diasCompletados = profile?.dias_completados ?? 0;
+  const pct = Math.round((diasCompletados / 30) * 100);
+  const ACTIVE = BLOCKS.find((b) => TODAY >= b.start && TODAY <= b.end) ?? BLOCKS[0];
+  const tone = C[ACTIVE.tone];
   const BlockIcon = ACTIVE.icon;
 
   return (
@@ -94,37 +144,74 @@ export default function Dashboard() {
           {/* Today block card */}
           <div className="lg:col-span-1 rounded-2xl p-5 flex flex-col justify-between"
             style={{ backgroundColor: tone.bg, border: `1.5px solid ${tone.border}` }}>
-            <div>
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: tone.soft }}>
-                  <BlockIcon size={22} style={{ color: tone.color }} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: tone.text }}>
-                    Bloque {ACTIVE.id} · Días {ACTIVE.start}–{ACTIVE.end}
-                  </p>
-                  <p className="font-['Lora'] text-lg font-semibold text-[#3E3A38] leading-tight">{ACTIVE.title}</p>
-                </div>
+            {planLoading ? (
+              <div className="flex-1 flex items-center justify-center py-8">
+                <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
               </div>
-              <p className="font-['Lora'] text-sm italic text-[#4A4644] leading-relaxed">
-                "{READING_DIA_12.cita}"
-              </p>
-              <p className="text-xs font-mono mt-1" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => navigate("/lectura")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: tone.color }}>
-                <BookOpen size={13} />
-                Lectura del día
-              </button>
-              <button className="px-3 py-2 rounded-xl text-xs font-medium border transition-all hover:bg-white/60"
-                style={{ borderColor: tone.border, color: tone.text }}>
-                <CheckCircle2 size={14} />
-              </button>
-            </div>
+            ) : planError === 'no_plan' ? (
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 py-8 text-center">
+                <BookOpen size={28} style={{ color: tone.color }} />
+                <p className="text-sm font-medium text-[#3E3A38]">No tenés un plan activo</p>
+                <p className="text-xs text-[#7A7270]">Completá el test inicial para comenzar</p>
+                <button onClick={() => navigate('/preguntas')} className="mt-2 px-4 py-2 rounded-xl text-xs font-semibold text-white" style={{ backgroundColor: tone.color }}>Iniciar test</button>
+              </div>
+            ) : profile?.actividad_completada_hoy ? (
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 py-8 text-center">
+                <CheckCircle2 size={28} style={{ color: tone.color }} />
+                <p className="font-['Lora'] text-base font-semibold text-[#3E3A38]">¡Actividad completada!</p>
+                <p className="text-xs text-[#7A7270]">Volvé mañana para el día {TODAY}</p>
+                {hitoAlcanzado && (
+                  <div className="mt-1 rounded-full px-3 py-1 text-xs font-semibold" style={{ backgroundColor: tone.soft, color: tone.text }}>
+                    🏅 ¡Racha de {hitoAlcanzado} días!
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: tone.soft }}>
+                      <BlockIcon size={22} style={{ color: tone.color }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: tone.text }}>
+                        Bloque {ACTIVE.id} · Días {ACTIVE.start}–{ACTIVE.end}
+                      </p>
+                      <p className="font-['Lora'] text-lg font-semibold text-[#3E3A38] leading-tight">
+                        {leccion?.titulo || ACTIVE.title}
+                      </p>
+                    </div>
+                  </div>
+                  {leccion?.datos_leccion?.cita && (
+                    <>
+                      <p className="font-['Lora'] text-sm italic text-[#4A4644] leading-relaxed">
+                        "{leccion.datos_leccion.cita}"
+                      </p>
+                      {leccion.datos_leccion.autor && (
+                        <p className="text-xs font-mono mt-1" style={{ color: tone.text }}>— {leccion.datos_leccion.autor}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => navigate("/lectura")}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
+                    style={{ backgroundColor: tone.color }}>
+                    <BookOpen size={13} />
+                    Lectura del día
+                  </button>
+                  <button
+                    onClick={handleCompleteDay}
+                    disabled={completando}
+                    className="px-3 py-2 rounded-xl text-xs font-medium border transition-all hover:bg-white/60 disabled:opacity-50"
+                    style={{ borderColor: tone.border, color: tone.text }}>
+                    {completando ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <CheckCircle2 size={14} />}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Progress */}
@@ -144,16 +231,16 @@ export default function Dashboard() {
                 </div>
               </div>
               <div>
-                <p className="font-['Lora'] text-2xl font-semibold text-[#3E3A38]">{TODAY - 1} <span className="text-base text-[#7A7270] font-normal">/ 30</span></p>
+                <p className="font-['Lora'] text-2xl font-semibold text-[#3E3A38]">{diasCompletados} <span className="text-base text-[#7A7270] font-normal">/ 30</span></p>
                 <p className="text-xs text-[#7A7270] mt-0.5">días completados</p>
                 <div className="flex gap-3 mt-2">
                   <div>
-                    <p className="font-['Lora'] font-semibold text-[#3E3A38] text-sm">5</p>
+                    <p className="font-['Lora'] font-semibold text-[#3E3A38] text-sm">{profile?.racha_dias ?? '—'}</p>
                     <p className="text-[10px] font-mono text-[#7A7270]">racha</p>
                   </div>
                   <div className="w-px" style={{ backgroundColor: GRAY.light }} />
                   <div>
-                    <p className="font-['Lora'] font-semibold text-[#3E3A38] text-sm">82%</p>
+                    <p className="font-['Lora'] font-semibold text-[#3E3A38] text-sm">{pct}%</p>
                     <p className="text-[10px] font-mono text-[#7A7270]">adherencia</p>
                   </div>
                 </div>
@@ -297,6 +384,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── Row 3: Reading panel (expandable) ── */}
+        {leccion && (
         <div className="bg-white rounded-2xl border overflow-hidden transition-all"
           style={{ borderColor: readingOpen ? tone.border : "rgba(62,58,56,0.09)" }}>
           <button
@@ -311,14 +399,14 @@ export default function Dashboard() {
                 <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: tone.text }}>Lectura del día {TODAY}</p>
                 <Tag tone={ACTIVE.tone}>{ACTIVE.title}</Tag>
               </div>
-              <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">{READING_DIA_12.titulo}</p>
+              <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">{leccion.titulo}</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
-              {saved && <div className="flex items-center gap-1 text-xs font-mono" style={{ color: C.green.color }}>
+              {profile?.actividad_completada_hoy && <div className="flex items-center gap-1 text-xs font-mono" style={{ color: C.green.color }}>
                 <CheckCircle2 size={13} /> Completada
               </div>}
               <div className="flex items-center gap-1 text-[#7A7270] text-xs font-mono">
-                <Clock size={12} /> 4 min
+                <Clock size={12} /> {leccion.tipo}
               </div>
               {readingOpen ? <ChevronUp size={16} className="text-[#7A7270]" /> : <ChevronDown size={16} className="text-[#7A7270]" />}
             </div>
@@ -329,30 +417,29 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-5">
                 {/* Text */}
                 <div>
-                  <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
-                    <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">"{READING_DIA_12.cita}"</p>
-                    <p className="text-xs font-mono mt-2" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
-                  </div>
-                  <p className="text-sm text-[#4A4644] leading-relaxed">{READING_DIA_12.cuerpo}</p>
+                  {leccion.datos_leccion?.cita && (
+                    <div className="rounded-xl p-4 mb-4" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
+                      <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">"{leccion.datos_leccion.cita}"</p>
+                      {leccion.datos_leccion.autor && (
+                        <p className="text-xs font-mono mt-2" style={{ color: tone.text }}>— {leccion.datos_leccion.autor}</p>
+                      )}
+                    </div>
+                  )}
+                  {leccion.datos_leccion?.cuerpo && (
+                    <p className="text-sm text-[#4A4644] leading-relaxed">{leccion.datos_leccion.cuerpo}</p>
+                  )}
                 </div>
 
-                {/* Question */}
+                {/* Question + Complete */}
                 <div>
-                  <div className="flex items-start gap-3 mb-3">
-                    <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 mt-0.5"
-                      style={{ backgroundColor: tone.soft, color: tone.text }}>1</span>
-                    <p className="text-sm font-medium text-[#3E3A38] leading-snug">{READING_DIA_12.pregunta}</p>
-                  </div>
-                  {saved ? (
-                    <div className="rounded-xl p-4 text-sm text-[#4A4644] leading-relaxed"
-                      style={{ backgroundColor: tone.bg }}>
-                      {answer}
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <CheckCircle2 size={12} style={{ color: tone.color }} />
-                        <span className="text-xs font-mono" style={{ color: tone.text }}>Guardado</span>
-                      </div>
+                  {leccion.datos_leccion?.pregunta && (
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 mt-0.5"
+                        style={{ backgroundColor: tone.soft, color: tone.text }}>1</span>
+                      <p className="text-sm font-medium text-[#3E3A38] leading-snug">{leccion.datos_leccion.pregunta}</p>
                     </div>
-                  ) : (
+                  )}
+                  {!profile?.actividad_completada_hoy ? (
                     <div>
                       <textarea
                         className="w-full rounded-xl border text-sm text-[#3E3A38] p-3 resize-none focus:outline-none bg-[#F7F5F4]"
@@ -362,12 +449,23 @@ export default function Dashboard() {
                         onChange={(e) => setAnswer(e.target.value)}
                       />
                       <button
-                        disabled={!answer.trim()}
-                        onClick={() => setSaved(true)}
+                        disabled={completando}
+                        onClick={handleCompleteDay}
                         className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40"
                         style={{ backgroundColor: tone.color }}>
-                        <Send size={11} /> Guardar reflexión
+                        {completando
+                          ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          : <><Send size={11} /> Completar actividad</>
+                        }
                       </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-4 text-sm text-[#4A4644] leading-relaxed" style={{ backgroundColor: tone.bg }}>
+                      {answer || "Actividad completada"}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <CheckCircle2 size={12} style={{ color: tone.color }} />
+                        <span className="text-xs font-mono" style={{ color: tone.text }}>Guardado</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -375,6 +473,7 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        )}
 
       </div>
     </div>

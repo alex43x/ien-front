@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { ChevronLeft, Clock, ArrowRight, BookOpen, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ArrowRight, BookOpen, ShieldCheck } from "lucide-react";
 import { C } from "@/constants/colors";
-import { READING_DIA_12 } from "@/content/readings";
+import { planService } from "../services/plan.service";
+import api from "../services/api";
+import type { Leccion } from "../types/api.types";
 
 export default function Lectura() {
   const navigate = useNavigate();
   const [scrollPct, setScrollPct] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(READING_DIA_12.tiempoMin * 60);
-  const timerRunning = true;
+  const [leccion, setLeccion] = useState<Leccion | null>(null);
+  const [loading, setLoading] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
-  const tone = C[READING_DIA_12.tono];
 
   // Scroll progress
   useEffect(() => {
@@ -22,18 +23,67 @@ export default function Lectura() {
     };
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
+  }, [loading]);
+
+  // Load lesson from API
+  useEffect(() => {
+    const loadLesson = async () => {
+      try {
+        setLoading(true);
+        // Intentar obtener la lección de hoy
+        const todayData = await planService.getTodayPlan();
+        if (todayData.leccion) {
+          setLeccion(todayData.leccion);
+        } else {
+          // Si ya se completó hoy, la lección viene como null en /today.
+          // La buscamos en el historial completo de días para que el usuario pueda releerla.
+          const profile = await planService.getProfile();
+          const response = await api.get('/plan/days');
+          const allDays = response.data.dias || [];
+          const todayLesson = allDays.find((d: any) => d.dia_numero === profile.dia_actual);
+          if (todayLesson && todayLesson.leccion) {
+            setLeccion({
+              dia_actual: todayLesson.dia_numero,
+              titulo: todayLesson.leccion.titulo,
+              tipo: todayLesson.leccion.tipo,
+              emociones_objetivo: todayLesson.leccion.emociones_objetivo,
+              respuesta_tipo: todayLesson.leccion.respuesta_tipo,
+              datos_leccion: todayLesson.leccion.datos_leccion
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error al cargar la lectura del día:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadLesson();
   }, []);
 
-  // Reading timer
-  useEffect(() => {
-    if (!timerRunning || timeLeft <= 0) return;
-    const id = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(id);
-  }, [timerRunning, timeLeft]);
+  const canContinue = scrollPct >= 80;
 
-  const mins = Math.floor(timeLeft / 60);
-  const secs = timeLeft % 60;
-  const canContinue = scrollPct >= 80 || timeLeft <= 0;
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#F7F5F4]">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+      </div>
+    );
+  }
+
+  if (!leccion) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-[#F7F5F4] px-4 text-center">
+        <BookOpen size={48} className="text-[#7A7270] mb-4" />
+        <h2 className="text-lg font-semibold text-[#3E3A38]">Lectura no disponible</h2>
+        <p className="text-sm text-[#7A7270] mt-1 max-w-xs">No se encontró contenido activo para hoy. Asegúrate de tener un plan iniciado.</p>
+        <button onClick={() => navigate("/dashboard")} className="mt-4 px-4 py-2 bg-[#3E3A38] text-white text-xs font-semibold rounded-xl">Volver al Dashboard</button>
+      </div>
+    );
+  }
+
+  // Mapear tono de color basado en el bloque/contenido
+  const tone = C.green; // default fallback
 
   return (
     <div className="h-screen flex flex-col bg-[#F7F5F4]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -49,15 +99,10 @@ export default function Lectura() {
               <ShieldCheck size={11} style={{ color: tone.color }} />
             </div>
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">
-              Bloque {READING_DIA_12.bloque} · Día {READING_DIA_12.dia}
+              Día {leccion.dia_actual} · {leccion.tipo}
             </p>
           </div>
-          <p className="text-sm font-semibold text-[#3E3A38] truncate mt-0.5">{READING_DIA_12.titulo}</p>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-mono flex-shrink-0"
-          style={{ color: timeLeft > 0 ? C.yellow.color : C.green.color }}>
-          <Clock size={13} />
-          {timeLeft > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : "Completado"}
+          <p className="text-sm font-semibold text-[#3E3A38] truncate mt-0.5">{leccion.titulo}</p>
         </div>
       </header>
 
@@ -76,63 +121,73 @@ export default function Lectura() {
               <BookOpen size={13} style={{ color: tone.color }} />
             </div>
             <span className="text-xs font-mono font-semibold" style={{ color: tone.text }}>
-              Lectura del día — {READING_DIA_12.tiempoMin} minutos
+              Lectura del día
             </span>
           </div>
 
           {/* Title */}
           <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38] leading-tight mb-6">
-            {READING_DIA_12.titulo}
+            {leccion.titulo}
           </h1>
 
-          {/* Pull quote */}
-          <div className="rounded-2xl p-5 mb-8" style={{ backgroundColor: tone.bg, borderLeft: `4px solid ${tone.color}` }}>
-            <p className="font-['Lora'] text-lg italic text-[#3E3A38] leading-relaxed">
-              "{READING_DIA_12.cita}"
-            </p>
-            <p className="text-sm font-mono mt-3" style={{ color: tone.text }}>— {READING_DIA_12.autor}</p>
-          </div>
-
-          {/* Body */}
-          <div className="space-y-5 mb-8">
-            {READING_DIA_12.paragraphs.map((p, i) => (
-              <p key={i} className="text-base text-[#4A4644] leading-relaxed" style={{ fontFamily: "'Lora', serif" }}>{p}</p>
-            ))}
-          </div>
-
-          {/* STOP list */}
-          <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-8">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">La técnica STOP</p>
-            <div className="space-y-3">
-              {READING_DIA_12.lista.map((item) => (
-                <div key={item.letra} className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
-                    style={{ backgroundColor: tone.soft, color: tone.color }}>
-                    {item.letra}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#3E3A38]">{item.palabra}</p>
-                    <p className="text-sm text-[#7A7270] mt-0.5">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
+          {/* Concepto / Cita */}
+          {leccion.datos_leccion?.concepto && (
+            <div className="rounded-2xl p-5 mb-8" style={{ backgroundColor: tone.bg, borderLeft: `4px solid ${tone.color}` }}>
+              <p className="font-['Lora'] text-lg italic text-[#3E3A38] leading-relaxed">
+                "{leccion.datos_leccion.concepto}"
+              </p>
             </div>
-          </div>
+          )}
 
-          {/* Closing */}
-          <p className="text-base font-['Lora'] italic text-[#4A4644] leading-relaxed mb-10">
-            {READING_DIA_12.cierre}
-          </p>
+          {/* Cuerpo principal del contenido */}
+          {leccion.datos_leccion?.contenido && (
+            <div className="space-y-5 mb-8">
+              <p className="text-base text-[#4A4644] leading-relaxed" style={{ fontFamily: "'Lora', serif" }}>
+                {leccion.datos_leccion.contenido}
+              </p>
+            </div>
+          )}
+
+          {/* Ejercicio del día */}
+          {leccion.datos_leccion?.ejercicio && (
+            <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-8">
+              <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-2">Ejercicio del día</p>
+              <h3 className="text-sm font-semibold text-[#3E3A38] mb-3">{leccion.datos_leccion.ejercicio.nombre}</h3>
+              <p className="text-sm text-[#4A4644] mb-4 leading-relaxed">{leccion.datos_leccion.ejercicio.instruccion}</p>
+              {leccion.datos_leccion.ejercicio.pasos && (
+                <div className="space-y-3">
+                  {leccion.datos_leccion.ejercicio.pasos.map((paso: string, idx: number) => (
+                    <div key={idx} className="flex items-start gap-4">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
+                        style={{ backgroundColor: tone.soft, color: tone.color }}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 pt-1.5">
+                        <p className="text-sm text-[#7A7270]">{paso}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Principio o recomendación */}
+          {leccion.datos_leccion?.principio && (
+            <p className="text-base font-['Lora'] italic text-[#4A4644] leading-relaxed mb-10">
+              💡 {leccion.datos_leccion.principio}
+            </p>
+          )}
 
           {/* CTA */}
           <div className="sticky bottom-0 pb-6">
             <div className={`transition-all duration-500 ${canContinue ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2"}`}>
               <button
                 disabled={!canContinue}
-                onClick={() => navigate("/preguntas")}
+                onClick={() => navigate("/dashboard")}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed shadow-lg"
                 style={{ backgroundColor: tone.color }}>
-                Ir a las preguntas de reflexión
+                Volver al Dashboard para responder
                 <ArrowRight size={16} />
               </button>
               {!canContinue && (

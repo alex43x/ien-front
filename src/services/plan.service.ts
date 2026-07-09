@@ -2,7 +2,8 @@ import api from './api';
 import { 
   SetupTestRequest, 
   SetupTestResponse, 
-  TodayPlanResponse, 
+  TodayPlanResponse,
+  PlanProfileResponse,
   CompleteDayResponse 
 } from '../types/api.types';
 
@@ -17,8 +18,18 @@ export const planService = {
     return response.data;
   },
 
-  completeDay: async () => {
-    const response = await api.post<CompleteDayResponse>('/plan/complete-day');
+  getProfile: async () => {
+    const response = await api.get<PlanProfileResponse>('/plan/profile');
+    return response.data;
+  },
+
+  getTestPreguntas: async () => {
+    const response = await api.get<any[]>('/plan/test-preguntas');
+    return response.data;
+  },
+
+  completeDay: async (respuesta_usuario?: string) => {
+    const response = await api.post<CompleteDayResponse>('/plan/complete-day', { respuesta_usuario });
     return response.data;
   }
 };

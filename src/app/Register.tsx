@@ -54,7 +54,7 @@ export default function Register() {
       // (Or let PublicRoute handle the redirect to dashboard, but let's go to bienvenida)
       navigate("/bienvenida");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al crear la cuenta.");
+      setError(err.response?.data?.error || "Error al crear la cuenta.");
       setLoading(false);
     }
   };
