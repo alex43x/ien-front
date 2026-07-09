@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import {
   CheckCircle2, Clock, Heart, Package, Activity, TrendingUp,
-  BookOpen, Send, ChevronDown, ChevronUp, Bell,
+  BookOpen, Send, ChevronDown, ChevronUp, Bell, LogOut,
 } from "lucide-react";
 import { C, GRAY } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
@@ -47,7 +47,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [answer, setAnswer] = useState("");
   const [saved, setSaved] = useState(false);
@@ -74,6 +74,14 @@ export default function Dashboard() {
           <button className="relative w-8 h-8 rounded-xl flex items-center justify-center text-[#7A7270] hover:bg-[#F0EDEC] transition-all">
             <Bell size={16} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.red.color }} />
+          </button>
+          <button
+            onClick={() => { logout(); navigate("/login"); }}
+            title="Cerrar sesión"
+            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </header>

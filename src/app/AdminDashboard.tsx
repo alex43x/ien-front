@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
   AreaChart,
   Area,
@@ -15,7 +16,9 @@ import {
   ShieldCheck,
   Bell,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const C = {
   yellow: { color: "#D9A030", bg: "#FEF7E0", border: "#F0D080", soft: "#FAEAB0", text: "#7A5800" },
@@ -103,6 +106,8 @@ const PATIENTS: Patient[] = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [selected, setSelected] = useState(PATIENTS[0]);
 
   return (
@@ -123,6 +128,14 @@ export default function AdminDashboard() {
           <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[#7A7270] hover:bg-[#F0EDEC] transition-all">
             <Bell size={16} />
             <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#E96B6B]" />
+          </button>
+          <button
+            onClick={() => { logout(); navigate("/login"); }}
+            title="Cerrar sesión"
+            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </header>
