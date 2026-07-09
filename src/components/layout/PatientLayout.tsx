@@ -36,6 +36,15 @@ export default function PatientLayout() {
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.red.color }} />
           </button>
 
+          <button
+            onClick={handleLogout}
+            title="Cerrar sesión"
+            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Salir</span>
+          </button>
+
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -64,20 +73,13 @@ export default function PatientLayout() {
                     </div>
                   </div>
                 </div>
-                <div className="p-2 space-y-1">
+                <div className="p-2">
                   <button
                     onClick={() => { setProfileOpen(false); }}
                     className="w-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-[#7A7270] hover:bg-[#F0EDEC] hover:text-[#3E3A38] transition-all"
                   >
                     <Settings size={15} />
                     Configuración
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all"
-                  >
-                    <LogOut size={15} />
-                    Cerrar sesión
                   </button>
                 </div>
               </div>
