@@ -182,16 +182,10 @@ export default function Login() {
               <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-[0.28em] text-[#7A7270]">
                 Con el apoyo de
               </p>
-              <div className="flex items-center justify-center gap-6 text-sm text-[#3E3A38]">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-[#FAEAEA] text-[10px] text-[#E96B6B]">♥</div>
-                  <span className="font-semibold">Cardiosmile</span>
-                </div>
-                <div className="h-4 w-px bg-[#E8E2DB]" />
-                <div className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-[#E6F5F3] text-[10px] text-[#4DAAA0]">+</div>
-                  <span className="font-semibold">Vitamin Shoppe</span>
-                </div>
+              <div className="flex items-center justify-center gap-12">
+                <img src="/src/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-24 w-auto object-contain" />
+                <div className="h-20 w-px bg-[#E8E2DB]" />
+                <img src="/src/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-24 w-auto object-contain" />
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { C } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
 
@@ -148,22 +148,18 @@ export default function Bienvenida() {
             >
               <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-3">Tus aliados en este camino</p>
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: C.red.bg }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: C.red.soft }}>
-                    <Heart size={14} style={{ color: C.red.color }} />
-                  </div>
+                <div className="flex items-center gap-6 p-6 rounded-xl" style={{ backgroundColor: C.red.bg }}>
+                  <img src="/src/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-28 w-auto object-contain rounded-lg" />
                   <div>
-                    <p className="text-sm font-semibold text-[#3E3A38]">Cardiosmile</p>
-                    <p className="text-xs text-[#7A7270]">Salud cardiovascular como acto de amor propio</p>
+                    <p className="text-lg font-semibold text-[#3E3A38]">Cardiosmile</p>
+                    <p className="text-sm text-[#7A7270]">Salud cardiovascular como acto de amor propio</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: C.green.bg }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: C.green.soft }}>
-                    <Sparkles size={14} style={{ color: C.green.color }} />
-                  </div>
+                <div className="flex items-center gap-6 p-6 rounded-xl" style={{ backgroundColor: C.green.bg }}>
+                  <img src="/src/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-28 w-auto object-contain rounded-lg" />
                   <div>
-                    <p className="text-sm font-semibold text-[#3E3A38]">Vitamin Shoppe</p>
-                    <p className="text-xs text-[#7A7270]">Suplementación de calidad para tu energía vital</p>
+                    <p className="text-lg font-semibold text-[#3E3A38]">Vitamin Shoppe</p>
+                    <p className="text-sm text-[#7A7270]">Suplementación de calidad para tu energía vital</p>
                   </div>
                 </div>
               </div>
