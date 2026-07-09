@@ -125,6 +125,31 @@ export default function Dashboard() {
             <Bell size={16} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: C.red.color }} />
           </button>
+          
+          {import.meta.env.DEV && (
+            <button
+              onClick={async () => {
+                try {
+                  await planService.advanceDay();
+                  // Refresh data
+                  const [todayPlan, profileData] = await Promise.all([
+                    planService.getTodayPlan(),
+                    planService.getProfile()
+                  ]);
+                  setLeccion(todayPlan.leccion);
+                  setProfile(profileData);
+                  setHitoAlcanzado(null); // Reset milestone message if any
+                } catch (error) {
+                  console.error("Error advancing day:", error);
+                }
+              }}
+              title="Avanzar día (DEV)"
+              className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
+            >
+              DEV: AVANZAR DÍA
+            </button>
+          )}
+
           <button
             onClick={() => { logout(); navigate("/login"); }}
             title="Cerrar sesión"

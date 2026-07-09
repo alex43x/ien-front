@@ -31,5 +31,10 @@ export const planService = {
   completeDay: async (respuesta_usuario?: string) => {
     const response = await api.post<CompleteDayResponse>('/plan/complete-day', { respuesta_usuario });
     return response.data;
+  },
+
+  advanceDay: async () => {
+    const response = await api.post<CompleteDayResponse>('/plan/testing/advance');
+    return response.data;
   }
 };
