@@ -17,6 +17,7 @@ import Preguntas from "./Preguntas";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminRoute from "../components/AdminRoute";
 import AdminLayout from "../components/layout/AdminLayout";
+import PatientLayout from "../components/layout/PatientLayout";
 import PublicRoute from "../components/PublicRoute";
 
 export const router = createBrowserRouter([
@@ -33,9 +34,19 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: "/bienvenida", element: <Bienvenida /> },
-      { path: "/dashboard", element: <Dashboard /> },
       { path: "/lectura", element: <Lectura /> },
       { path: "/preguntas", element: <Preguntas /> },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <PatientLayout />,
+        children: [
+          { path: "/dashboard", element: <Dashboard /> },
+        ],
+      },
     ],
   },
   {
