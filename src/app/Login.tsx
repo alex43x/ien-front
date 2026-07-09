@@ -2,16 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, Brain, Eye, EyeOff, HeartHandshake, ShieldCheck, Sparkles } from "lucide-react";
 import { C } from "@/constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError("Completa todos los campos.");
@@ -19,10 +21,15 @@ export default function Login() {
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login({ email, password });
+      // El PublicRoute nos va a redirigir al dashboard, 
+      // pero por si acaso o si queremos forzar ir a bienvenida:
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error al iniciar sesión.");
       setLoading(false);
-      navigate("/bienvenida");
-    }, 900);
+    }
   };
 
   return (

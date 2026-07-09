@@ -43,8 +43,11 @@ const circ = 2 * Math.PI * r;
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
+import { useAuth } from "../context/AuthContext";
+
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [answer, setAnswer] = useState("");
   const [saved, setSaved] = useState(false);
@@ -59,7 +62,7 @@ export default function Dashboard() {
         <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-2 text-sm text-[#7A7270]">
-            <span className="font-medium text-[#3E3A38]">María González</span>
+            <span className="font-medium text-[#3E3A38]">{user?.nombre || "Usuario"}</span>
             <span>·</span>
             <Tag tone={ACTIVE.tone}>Día {TODAY} — Bloque {ACTIVE.id}</Tag>
           </div>

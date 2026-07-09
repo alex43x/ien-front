@@ -1,23 +1,26 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound, Scan } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [codigoActivacion, setCodigoActivacion] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword || !codigoActivacion) {
       setError("Completa todos los campos.");
       setSuccess("");
       return;
@@ -39,14 +42,21 @@ export default function Register() {
     setSuccess("");
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      await register({
+        nombre: name,
+        email,
+        password,
+        codigo_activacion: codigoActivacion
+      });
+      setSuccess("Cuenta creada exitosamente.");
+      // Redirect to bienvenida because they are now authenticated
+      // (Or let PublicRoute handle the redirect to dashboard, but let's go to bienvenida)
+      navigate("/bienvenida");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error al crear la cuenta.");
       setLoading(false);
-      setSuccess("Cuenta creada. Te llevamos al siguiente paso.");
-      setTimeout(() => {
-        navigate("/activar");
-        setTimeout(() => navigate("/bienvenida"), 800);
-      }, 900);
-    }, 900);
+    }
   };
 
   return (
@@ -136,6 +146,22 @@ export default function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="maria@ejemplo.com"
+                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-4 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
+                  Código de Activación
+                </label>
+                <div className="relative">
+                  <Scan size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
+                  <input
+                    type="text"
+                    value={codigoActivacion}
+                    onChange={(e) => setCodigoActivacion(e.target.value)}
+                    placeholder="XXXX-XXXX"
                     className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-4 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
                   />
                 </div>
