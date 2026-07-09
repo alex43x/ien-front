@@ -17,10 +17,10 @@ frontend/
 │   │   ├── App.tsx             # Provider root: AuthProvider + RouterProvider
 │   │   ├── routes.tsx          # Definición de todas las rutas (createBrowserRouter)
 │   │   ├── Login.tsx           # Inicio de sesión
-│   │   ├── Register.tsx        # Registro con código de activación
-│   │   ├── Dashboard.tsx       # Dashboard del paciente
-│   │   ├── Bienvenida.tsx      # Onboarding post-registro
-│   │   ├── Activar.tsx         # Activación de producto
+│   │   ├── Register.tsx        # Registro (nombre, email, password) → navega a /activar
+│   │   ├── Dashboard.tsx       # Dashboard del paciente (envuelto en PatientLayout)
+│   │   ├── Bienvenida.tsx      # Onboarding post-activación
+│   │   ├── Activar.tsx         # Activación con código IEN-002 + llama register()
 │   │   ├── Lectura.tsx         # Lectura diaria
 │   │   ├── Preguntas.tsx       # Test diagnóstico
 │   │   ├── AdminDashboard.tsx  # Dashboard admin (métricas reales)
@@ -37,9 +37,10 @@ frontend/
 │   │   ├── AdminRoute.tsx      # Guard: solo admin_general / admin_negocio
 │   │   ├── PublicRoute.tsx     # Guard: solo público
 │   │   └── layout/
-│   │       ├── AdminLayout.tsx # Layout con sidebar para admin
-│   │       ├── PageShell.tsx   # Wrapper de página
-│   │       └── PageHeader.tsx  # Header con botón de retroceso
+│   │       ├── AdminLayout.tsx   # Layout con sidebar para admin
+│   │       ├── PatientLayout.tsx # Layout para paciente (bandeja perfil + header)
+│   │       ├── PageShell.tsx     # Wrapper de página
+│   │       └── PageHeader.tsx    # Header con botón de retroceso
 │   │
 │   ├── context/
 │   │   └── AuthContext.tsx     # Estado global de autenticación

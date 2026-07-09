@@ -4,21 +4,23 @@
 
 Archivo: [`src/app/routes.tsx`](../src/app/routes.tsx)
 
-Usa `createBrowserRouter` de react-router v7 con tres niveles de protección:
+Usa `createBrowserRouter` de react-router v7:
 
 ```
 AuthProvider (contexto)
   └── RouterProvider
         ├── Ruta raíz / → redirect a /login
-        ├── PublicRoute
+        ├── PublicRoute (solo público)
         │     ├── /login
         │     └── /register
+        ├── Sin guard (acceso libre)
+        │     └── /activar
         ├── ProtectedRoute (cualquier autenticado)
-        │     ├── /dashboard
         │     ├── /bienvenida
-        │     ├── /activar
         │     ├── /lectura
-        │     └── /preguntas
+        │     ├── /preguntas
+        │     └── PatientLayout
+        │           └── /dashboard
         └── AdminRoute (admin_general | admin_negocio)
               └── AdminLayout (sidebar)
                     ├── /admin → /admin/dashboard
@@ -32,39 +34,56 @@ AuthProvider (contexto)
                     └── /admin/crear-admin
 ```
 
-## Guards
+## Flujo de navegación
 
-### PublicRoute ([`src/components/PublicRoute.tsx`](../src/components/PublicRoute.tsx))
+### Registro (sin autenticación)
+1. Register → valida nombre/email/password → navega a `/activar` con datos en `location.state`
+2. Activar → ingresa código IEN-002 + productos → llama `register()` de AuthContext → `/bienvenida`
+3. Bienvenida → CTA "Ir al programa" → `/dashboard`
 
-- Si `isLoading` → spinner
-- Si `isAuthenticated` → redirect a `/admin/dashboard` (admin) o `/dashboard` (paciente)
-- Si no → renderiza `<Outlet />` con Login o Register
-
-### ProtectedRoute ([`src/components/ProtectedRoute.tsx`](../src/components/ProtectedRoute.tsx))
-
-- Si `isLoading` → spinner
-- Si no autenticado → redirect a `/login`
-- Si autenticado → renderiza `<Outlet />`
-
-### AdminRoute ([`src/components/AdminRoute.tsx`](../src/components/AdminRoute.tsx))
-
-- Si `isLoading` → spinner
-- Si no autenticado → redirect a `/login`
-- Si no es admin (`isAdmin === false`) → redirect a `/dashboard`
-- Si es admin → renderiza `<Outlet />`
-
-## Layouts
-
-El layout `AdminLayout` ([`src/components/layout/AdminLayout.tsx`](../src/components/layout/AdminLayout.tsx)) envuelve todas las rutas admin. Ver [admin-panel](06-admin-panel.md) para detalles.
-
-Las rutas de paciente (`/dashboard`, `/lectura`, etc.) no tienen un layout compartido — cada página maneja su propia estructura.
-
-## Flujo de navegación post-login
-
+### Login (sin autenticación → autenticado)
 1. Login exitoso → `AuthContext.login()` actualiza estado
 2. React re-renderiza → `PublicRoute` detecta `isAuthenticated`
 3. `PublicRoute` redirige según `isAdmin`:
    - Admin → `/admin/dashboard`
    - Paciente → `/dashboard`
+
+## Guards
+
+### PublicRoute ([`src/components/PublicRoute.tsx`](../src/components/PublicRoute.tsx))
+- `isLoading` → spinner
+- `isAuthenticated` → redirect a `/admin/dashboard` (admin) o `/dashboard` (paciente)
+- No autenticado → renderiza `<Outlet />` con Login o Register
+
+### ProtectedRoute ([`src/components/ProtectedRoute.tsx`](../src/components/ProtectedRoute.tsx))
+- `isLoading` → spinner
+- No autenticado → redirect a `/login`
+- Autenticado → renderiza `<Outlet />`
+
+### AdminRoute ([`src/components/AdminRoute.tsx`](../src/components/AdminRoute.tsx))
+- `isLoading` → spinner
+- No autenticado → redirect a `/login`
+- No es admin → redirect a `/dashboard`
+- Es admin → renderiza `<Outlet />`
+
+## Layouts
+
+### AdminLayout ([`src/components/layout/AdminLayout.tsx`](../src/components/layout/AdminLayout.tsx))
+Envuelve todas las rutas admin con sidebar + header. Ver [admin-panel](06-admin-panel.md).
+
+### PatientLayout ([`src/components/layout/PatientLayout.tsx`](../src/components/layout/PatientLayout.tsx))
+Envuelve `/dashboard` con:
+- Header sticky con logo IEN
+- Bandeja de perfil desplegable (nombre, email, configuración, cerrar sesión)
+- Campana de notificaciones
+
+Actualmente solo envuelve `/dashboard`. Las demás rutas de paciente (`/lectura`, `/preguntas`) manejan su propia estructura.
+
+## Rutas sin guard
+
+`/activar` no tiene guard porque:
+- Se accede desde Register (sin autenticación)
+- Al completar la activación llama a `register()`, que autentica al usuario
+- Si ya está autenticado, `PublicRoute` redirigiría antes de completar el flujo
 
 Ver [autenticación](03-autenticacion.md) para el flujo completo.

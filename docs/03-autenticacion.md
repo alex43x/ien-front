@@ -45,7 +45,13 @@ App inicia
 
 ### register()
 
-Similar a login pero con POST `/auth/register`.
+Se llama desde la página `Activar.tsx` (no desde `Register.tsx`).
+
+1. `Register.tsx` recoge nombre/email/password y navega a `/activar` con los datos en `location.state`
+2. `Activar.tsx` recibe los datos + usuario ingresa `codigo_activacion` (formato IEN-002)
+3. Al presionar "Comenzar el programa" → llama `register({ nombre, email, password, codigo_activacion })`
+4. El servicio guarda tokens y usuario en localStorage y actualiza el estado
+5. Navega a `/bienvenida`
 
 ### logout()
 

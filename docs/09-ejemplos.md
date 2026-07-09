@@ -57,12 +57,24 @@ import MiPagina from "./MiPagina";
   ],
 }
 
-// Si va como ruta protegida normal:
+// Si va como ruta protegida normal (sin layout):
 {
   element: <ProtectedRoute />,
   children: [
     { path: "/mi-ruta", element: <MiPagina /> },
-    // ...
+  ],
+}
+
+// Si va dentro del PatientLayout (con header + bandeja perfil):
+{
+  element: <ProtectedRoute />,
+  children: [
+    {
+      element: <PatientLayout />,
+      children: [
+        { path: "/dashboard", element: <Dashboard /> },
+      ],
+    },
   ],
 }
 ```

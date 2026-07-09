@@ -60,15 +60,48 @@
 Layout completo del panel admin con sidebar. Ver [admin-panel](06-admin-panel.md) para más detalles.
 
 ```typescript
-// Uso: envuelve las rutas admin
 {
   element: <AdminLayout />,
   children: [
     { path: "/admin/dashboard", element: <AdminDashboard /> },
-    // ...
   ],
 }
 ```
+
+### PatientLayout ([`src/components/layout/PatientLayout.tsx`](../src/components/layout/PatientLayout.tsx))
+
+Layout para el dashboard del paciente. Incluye header con bandeja de perfil.
+
+```
+┌─────────────────────────────────┐
+│  [Logo]     [🔔]  [Perfil ▼]   │  ← header sticky
+├─────────────────────────────────┤
+│                                 │
+│         <Outlet />              │  ← página activa
+│                                 │
+└─────────────────────────────────┘
+```
+
+**Bandeja de perfil:** dropdown al hacer click en el avatar del usuario:
+- Nombre y email del usuario (desde AuthContext)
+- Botón "Configuración"
+- Botón "Cerrar sesión"
+
+```typescript
+{
+  element: <ProtectedRoute />,
+  children: [
+    {
+      element: <PatientLayout />,
+      children: [
+        { path: "/dashboard", element: <Dashboard /> },
+      ],
+    },
+  ],
+}
+```
+
+Actualmente solo envuelve `/dashboard`. Las rutas `/lectura` y `/preguntas` tienen su propia estructura.
 
 ### PageShell ([`src/components/layout/PageShell.tsx`](../src/components/layout/PageShell.tsx))
 
