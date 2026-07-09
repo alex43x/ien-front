@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Usuario } from '../types/api.types';
 import { authService } from '../services/auth.service';
 
@@ -6,6 +6,7 @@ interface AuthContextType {
   user: Usuario | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   login: (data: any) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
@@ -13,36 +14,47 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function saveUser(user: Usuario) {
+  localStorage.setItem('usuario', JSON.stringify(user));
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Usuario | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const setUserData = useCallback((userData: Usuario | null) => {
+    setUser(userData);
+    if (userData) {
+      saveUser(userData);
+    }
+  }, []);
+
   useEffect(() => {
-    // Check if user is logged in
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        if (token) {
+        if (!token) {
+          const refreshToken = localStorage.getItem('refresh_token');
+          if (refreshToken) {
+            await authService.refresh();
+          } else {
+            setIsLoading(false);
+            return;
+          }
+        }
+        try {
+          const profile = await authService.getProfile();
+          setUserData(profile);
+        } catch {
           const storedUser = localStorage.getItem('usuario');
           if (storedUser) {
             setUser(JSON.parse(storedUser));
-          }
-          setIsAuthenticated(true);
-        } else {
-          const refreshToken = localStorage.getItem('refresh_token');
-          if (refreshToken) {
-            // Attempt to refresh token
-            const response = await authService.refresh();
-            if (response.access_token) {
-              const storedUser = localStorage.getItem('usuario');
-              if (storedUser) {
-                setUser(JSON.parse(storedUser));
-              }
-              setIsAuthenticated(true);
-            }
+          } else {
+            throw new Error('No user data');
           }
         }
+        setIsAuthenticated(true);
       } catch (error) {
         console.error('Auth initialization error', error);
         localStorage.removeItem('access_token');
@@ -54,12 +66,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     checkAuth();
-  }, []);
+  }, [setUserData]);
 
   const login = async (data: any) => {
     const response = await authService.login(data);
     if (response.usuario) {
-      setUser(response.usuario);
+      setUserData(response.usuario);
     }
     setIsAuthenticated(true);
   };
@@ -67,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (data: any) => {
     const response = await authService.register(data);
     if (response.usuario) {
-      setUser(response.usuario);
+      setUserData(response.usuario);
     }
     setIsAuthenticated(true);
   };
@@ -80,12 +92,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
-      // Let the ProtectedRoute redirect the user automatically
     }
   };
 
+  const isAdmin = user?.rol === 'admin_general' || user?.rol === 'admin_negocio';
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, isAdmin, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

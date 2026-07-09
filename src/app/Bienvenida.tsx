@@ -47,7 +47,7 @@ export default function Bienvenida() {
   const [direction, setDirection] = useState(1);
   const [allSeen, setAllSeen] = useState(false);
   const { displayed, done: typeDone } = useTypewriter(
-    ["Bienvenida,", "María."],
+    ["Bienvenida,", "Gladys."],
     42,
     340,
   );

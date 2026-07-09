@@ -2,12 +2,18 @@ import api from './api';
 import { 
   ValidateCodeRequest, 
   ValidateCodeResponse, 
-  AuthResponse 
+  AuthResponse,
+  Usuario,
 } from '../types/api.types';
 
 export const authService = {
   validateCode: async (data: ValidateCodeRequest) => {
     const response = await api.post<ValidateCodeResponse>('/auth/validate-code', data);
+    return response.data;
+  },
+
+  getProfile: async () => {
+    const response = await api.get<Usuario>('/auth/profile');
     return response.data;
   },
 
@@ -40,6 +46,10 @@ export const authService = {
   refresh: async () => {
     const refreshToken = localStorage.getItem('refresh_token');
     const response = await api.post<AuthResponse>('/auth/refresh', { refresh_token: refreshToken });
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+      localStorage.setItem('refresh_token', response.data.refresh_token);
+    }
     return response.data;
   },
 

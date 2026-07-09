@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 
-export default function PublicRoute() {
+export default function AdminRoute() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
   if (isLoading) {
@@ -12,8 +12,12 @@ export default function PublicRoute() {
     );
   }
 
-  if (isAuthenticated) {
-    return <Navigate to={isAdmin ? "/admin/dashboard" : "/dashboard"} replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;

@@ -4,10 +4,18 @@ export interface Tienda {
   ciudad: string;
 }
 
+export interface TiendaDocument {
+  _id: string;
+  nombre_tienda: string;
+  ciudad: string;
+}
+
 export interface Usuario {
   id: string;
   nombre: string;
   email: string;
+  rol?: 'usuario' | 'admin_negocio' | 'admin_general';
+  tiendas_administradas?: string[];
 }
 
 // Auth
@@ -97,6 +105,96 @@ export interface AdminMetrics {
   racha_promedio: number;
   racha_maxima_promedio: number;
   usuarios_en_riesgo: number;
+}
+
+export interface Paciente {
+  id: string;
+  nombre: string;
+  email: string;
+  fecha_registro: string;
+  tienda: { id: string; nombre: string } | null;
+  plan: { estado: string; dia_actual: number; racha_dias: number } | null;
+}
+
+export interface PaginacionPacientes {
+  pacientes: Paciente[];
+  total: number;
+  pagina: number;
+}
+
+export interface PerfilPaciente {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  fecha_registro: string;
+  tienda: TiendaDocument | null;
+  producto: { _id: string; nombre: string; descripcion?: string } | null;
+}
+
+export interface ProgresoPaciente {
+  estado: 'activo' | 'completado' | 'abandonado';
+  dia_actual: number;
+  racha_dias: number;
+  racha_maxima: number;
+  hitos_alcanzados: number[];
+  fecha_inicio: string;
+  ultima_fecha_actividad: string;
+  test_inicial: any;
+  progreso_diario: any[];
+}
+
+export interface ReportesUsuarios {
+  registrados: { total: number; hoy: number; semanal: number };
+  activos: { total: number; hoy: number; semanal: number };
+}
+
+export interface GraficaSemanal {
+  fecha: string;
+  cantidad: number;
+}
+
+export interface Sucursal {
+  _id: string;
+  nombre_tienda: string;
+  ciudad: string;
+}
+
+export interface ProductoAdmin {
+  _id: string;
+  nombre: string;
+  descripcion?: string;
+  tiendas?: string[] | TiendaDocument[];
+}
+
+export interface CodigoActivacion {
+  _id: string;
+  codigo: string;
+  producto_id: { _id: string; nombre: string } | string;
+  tienda_id: { _id: string; nombre_tienda: string; ciudad: string } | string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_activacion?: string;
+}
+
+export interface CreateAdminNegocioRequest {
+  nombre: string;
+  email: string;
+  password: string;
+  tiendas_administradas: string[];
+}
+
+export interface CreateAdminNegocioResponse {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  tiendas_administradas: string[];
+}
+
+export interface CodigoResponse {
+  mensaje: string;
+  codigo?: CodigoActivacion;
 }
 
 // Jobs

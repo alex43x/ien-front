@@ -23,9 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login({ email, password });
-      // El PublicRoute nos va a redirigir al dashboard, 
-      // pero por si acaso o si queremos forzar ir a bienvenida:
-      navigate("/dashboard");
+      // PublicRoute redirige automáticamente al dashboard correcto
     } catch (err: any) {
       setError(err.response?.data?.error || "Error al iniciar sesión.");
       setLoading(false);
@@ -55,7 +53,7 @@ export default function Login() {
               Programa de 30 días
             </div>
             <h2 className="mt-6 font-['Lora'] text-4xl font-semibold leading-tight text-white">
-              30 días para transformar tu relación con la comida
+              30 días para transformar tu relación con la comida y tu bienestar
             </h2>
             <p className="mt-4 max-w-md text-sm leading-6 text-white/65">
               Inteligencia emocional aplicada a la nutrición, con apoyo guiado y un enfoque humano para avanzar con calma.
