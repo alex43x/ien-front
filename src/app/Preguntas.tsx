@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft, ChevronRight, CheckCircle2, Send, ShieldCheck, BookOpen } from "lucide-react";
-import { C } from "@/constants/colors";
+import { C, GRAY } from "@/constants/colors";
 import { planService } from "../services/plan.service";
+import type { SetupTestResponse } from "../types/api.types";
 
 const TONO = "red" as const;
 const tone = C[TONO];
@@ -22,6 +23,7 @@ export default function Preguntas() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [testResult, setTestResult] = useState<SetupTestResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,7 +88,8 @@ export default function Preguntas() {
         emociones_a_mejorar: [] // El backend lo deriva o requiere vacío
       };
 
-      await planService.setupTest(payload);
+      const result = await planService.setupTest(payload);
+      setTestResult(result);
       setSubmitted(true);
     } catch (err: any) {
       console.error("Error setting up plan:", err);
@@ -95,17 +98,58 @@ export default function Preguntas() {
     }
   };
 
-  if (submitted) {
+  if (submitted && testResult) {
+    const puntuaciones = testResult.puntuaciones_por_competencia ?? [];
+    const maxScore = 25;
     return (
-      <div className="min-h-screen bg-[#F7F5F4] flex flex-col items-center justify-center px-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: C.green.soft }}>
-            <CheckCircle2 size={36} style={{ color: C.green.color }} />
+      <div className="min-h-screen bg-[#F7F5F4] flex flex-col items-center justify-center px-4 py-10" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: C.green.soft }}>
+              <CheckCircle2 size={36} style={{ color: C.green.color }} />
+            </div>
+            <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38] mb-3">¡Plan Creado!</h1>
+            <p className="text-sm text-[#7A7270] leading-relaxed">
+              Hemos analizado tus respuestas. Estos son tus resultados por competencia:
+            </p>
           </div>
-          <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38] mb-3">¡Plan Creado!</h1>
-          <p className="text-[#7A7270] leading-relaxed mb-8">
-            Hemos analizado tus respuestas y tu plan personalizado de 30 días está listo. Es hora de comenzar tu recorrido.
-          </p>
+
+          <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-4 shadow-sm">
+            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Tus puntuaciones</p>
+            <div className="space-y-4">
+              {puntuaciones.map((p) => {
+                const pct = Math.round((p.puntuacion / maxScore) * 100);
+                const isBaja = p.puntuacion < 20;
+                const color = isBaja ? C.red : p.puntuacion >= 22 ? C.green : C.yellow;
+                return (
+                  <div key={p.competencia}>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-[#3E3A38]">{p.competencia_label}</p>
+                      <p className="text-xs font-mono font-semibold" style={{ color: color.color }}>
+                        {p.puntuacion}/{maxScore}
+                      </p>
+                    </div>
+                    <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: GRAY.light }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, backgroundColor: color.color }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {testResult.competencias_a_mejorar && testResult.competencias_a_mejorar.length > 0 && (
+            <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: C.yellow.bg, border: `1px solid ${C.yellow.soft}` }}>
+              <p className="text-xs font-semibold text-[#3E3A38] mb-1">Áreas a mejorar</p>
+              <p className="text-xs text-[#7A7270]">
+                Tu plan se enfocará en: <span className="font-semibold text-[#3E3A38]">{testResult.competencias_a_mejorar.join(', ')}</span>
+              </p>
+            </div>
+          )}
+
           <button
             onClick={() => navigate("/dashboard")}
             className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"

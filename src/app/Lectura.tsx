@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { ChevronLeft, ArrowRight, BookOpen, ShieldCheck } from "lucide-react";
+import { ChevronLeft, BookOpen, ShieldCheck, Pill, CheckSquare, Square, Send } from "lucide-react";
 import { C } from "@/constants/colors";
 import { planService } from "../services/plan.service";
 import api from "../services/api";
@@ -11,7 +11,11 @@ export default function Lectura() {
   const [scrollPct, setScrollPct] = useState(0);
   const [leccion, setLeccion] = useState<Leccion | null>(null);
   const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [completando, setCompletando] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const setAnswer = (id: string, value: any) => setAnswers(prev => ({ ...prev, [id]: value }));
 
   // Scroll progress
   useEffect(() => {
@@ -48,6 +52,7 @@ export default function Lectura() {
               tipo: todayLesson.leccion.tipo,
               emociones_objetivo: todayLesson.leccion.emociones_objetivo,
               respuesta_tipo: todayLesson.leccion.respuesta_tipo,
+              campos_respuesta: todayLesson.leccion.campos_respuesta ?? [],
               datos_leccion: todayLesson.leccion.datos_leccion
             });
           }
@@ -60,6 +65,27 @@ export default function Lectura() {
     };
     loadLesson();
   }, []);
+
+  const handleComplete = async () => {
+    if (completando || !leccion) return;
+    setCompletando(true);
+    try {
+      if (leccion.campos_respuesta && leccion.campos_respuesta.length > 0) {
+        const respuestas = leccion.campos_respuesta.map(campo => ({
+          id: campo.id,
+          valor: answers[campo.id] ?? '',
+          tipo: campo.tipo
+        }));
+        await planService.responderDiario({ dia_numero: leccion.dia_actual, respuestas });
+      }
+      await planService.completeDay();
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Error al completar actividad:", err);
+    } finally {
+      setCompletando(false);
+    }
+  };
 
   const canContinue = scrollPct >= 80;
 
@@ -153,22 +179,103 @@ export default function Lectura() {
             <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-8">
               <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-2">Ejercicio del día</p>
               <h3 className="text-sm font-semibold text-[#3E3A38] mb-3">{leccion.datos_leccion.ejercicio.nombre}</h3>
-              <p className="text-sm text-[#4A4644] mb-4 leading-relaxed">{leccion.datos_leccion.ejercicio.instruccion}</p>
-              {leccion.datos_leccion.ejercicio.pasos && (
-                <div className="space-y-3">
-                  {leccion.datos_leccion.ejercicio.pasos.map((paso: string, idx: number) => (
-                    <div key={idx} className="flex items-start gap-4">
+              <p className="text-sm text-[#4A4644] mb-5 leading-relaxed">{leccion.datos_leccion.ejercicio.instruccion}</p>
+
+              {leccion.campos_respuesta && leccion.campos_respuesta.length > 0 && (
+                <div className="space-y-4">
+                  {leccion.campos_respuesta.map((campo, idx) => (
+                    <div key={campo.id} className="flex items-start gap-4">
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
                         style={{ backgroundColor: tone.soft, color: tone.color }}>
                         {idx + 1}
                       </div>
                       <div className="flex-1 pt-1.5">
-                        <p className="text-sm text-[#7A7270]">{paso}</p>
+                        <p className="text-sm font-medium text-[#3E3A38] mb-2">{campo.etiqueta}</p>
+                        {campo.tipo === 'escala' && (
+                          <div className="bg-[#F7F5F4] rounded-xl p-4">
+                            <div className="flex gap-1.5 justify-between mb-3">
+                              {Array.from({ length: (campo.max ?? 10) - (campo.min ?? 1) + 1 }, (_, i) => (campo.min ?? 1) + i).map((val) => {
+                                const selected = (answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)) === val;
+                                return (
+                                  <button
+                                    key={val}
+                                    type="button"
+                                    onClick={() => setAnswer(campo.id, val)}
+                                    className="flex-1 aspect-square rounded-xl font-mono font-semibold text-sm transition-all hover:scale-105"
+                                    style={{
+                                      backgroundColor: selected ? tone.color : tone.bg,
+                                      color: selected ? 'white' : tone.color,
+                                      border: `2px solid ${selected ? tone.color : tone.soft}`,
+                                    }}>
+                                    {val}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[10px] font-mono text-[#7A7270]">{campo.min ?? 1}</span>
+                              <span className="text-[10px] font-mono text-[#7A7270]">{campo.max ?? 10}</span>
+                            </div>
+                          </div>
+                        )}
+                        {campo.tipo === 'texto' && (
+                          <textarea
+                            className="w-full rounded-xl border text-sm text-[#3E3A38] p-3 resize-none focus:outline-none bg-[#F7F5F4] transition-all focus:shadow-sm"
+                            style={{ borderColor: "rgba(62,58,56,0.12)", minHeight: 80, fontFamily: "'Lora', serif" }}
+                            placeholder="Escribe tu respuesta aquí..."
+                            value={answers[campo.id] ?? ''}
+                            onChange={(e) => setAnswer(campo.id, e.target.value)}
+                          />
+                        )}
+                        {campo.tipo === 'actividad' && (
+                          <button
+                            type="button"
+                            onClick={() => setAnswer(campo.id, !answers[campo.id])}
+                            className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all hover:shadow-sm border"
+                            style={{
+                              backgroundColor: answers[campo.id] ? tone.bg : '#F7F5F4',
+                              borderColor: answers[campo.id] ? tone.color : 'rgba(62,58,56,0.09)'
+                            }}>
+                            {answers[campo.id] ? (
+                              <CheckSquare size={18} style={{ color: tone.color }} />
+                            ) : (
+                              <Square size={18} className="text-[#7A7270]" />
+                            )}
+                            <span className="text-sm" style={{ color: answers[campo.id] ? '#3E3A38' : '#7A7270' }}>
+                              {answers[campo.id] ? 'Completado' : 'Marcar como hecho'}
+                            </span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Suplementación recomendada */}
+          {leccion.datos_leccion?.suplementacion && leccion.datos_leccion.suplementacion.length > 0 && (
+            <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Pill size={14} style={{ color: tone.color }} />
+                <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Suplementación recomendada</p>
+              </div>
+              <div className="space-y-3">
+                {leccion.datos_leccion.suplementacion.map((sup, idx: number) => (
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: tone.bg }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: tone.soft }}>
+                      <Pill size={13} style={{ color: tone.color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#3E3A38]">{sup.nombre}</p>
+                      <p className="text-xs text-[#7A7270] mt-0.5">{sup.dosis} · {sup.horario}</p>
+                      <p className="text-xs text-[#4A4644] mt-1">{sup.beneficio}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -180,15 +287,17 @@ export default function Lectura() {
           )}
 
           {/* CTA */}
-          <div className="sticky bottom-0 pb-6">
+          <div className="sticky bottom-0 pb-6 mt-8">
             <div className={`transition-all duration-500 ${canContinue ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2"}`}>
               <button
-                disabled={!canContinue}
-                onClick={() => navigate("/dashboard")}
+                disabled={!canContinue || completando}
+                onClick={handleComplete}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed shadow-lg"
                 style={{ backgroundColor: tone.color }}>
-                Volver al Dashboard para responder
-                <ArrowRight size={16} />
+                {completando
+                  ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  : <><Send size={15} /> Completar actividad</>
+                }
               </button>
               {!canContinue && (
                 <p className="text-center text-xs font-mono text-[#7A7270] mt-2">

@@ -4,7 +4,9 @@ import {
   SetupTestResponse, 
   TodayPlanResponse,
   PlanProfileResponse,
-  CompleteDayResponse 
+  CompleteDayResponse,
+  ResponderDiaRequest,
+  ResponderDiaResponse 
 } from '../types/api.types';
 
 export const planService = {
@@ -35,6 +37,11 @@ export const planService = {
 
   advanceDay: async () => {
     const response = await api.post<CompleteDayResponse>('/plan/testing/advance');
+    return response.data;
+  },
+
+  responderDiario: async (data: ResponderDiaRequest) => {
+    const response = await api.post<ResponderDiaResponse>('/plan/responder-dia', data);
     return response.data;
   }
 };

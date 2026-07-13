@@ -45,18 +45,54 @@ export interface SetupTestRequest {
   emociones_a_mejorar: string[];
 }
 
+export interface PuntuacionCompetencia {
+  competencia: string;
+  competencia_label: string;
+  puntuacion: number;
+}
+
 export interface SetupTestResponse {
   plan_id: string;
   dia_actual: number;
   estado: string;
+  puntuaciones_por_competencia: PuntuacionCompetencia[];
+  competencias_a_mejorar: string[];
+}
+
+export interface EjercicioDatos {
+  nombre: string;
+  instruccion: string;
+  pasos?: string[];
+  tipo?: string;
+  respuesta_tipo?: string;
+  registro?: Record<string, any>;
+}
+
+export interface SuplementoDatos {
+  nombre: string;
+  dosis: string;
+  horario: string;
+  beneficio: string;
 }
 
 export interface DatosLeccion {
-  cita?: string;
-  autor?: string;
-  cuerpo?: string;
-  pregunta?: string;
-  [key: string]: any;
+  titulo?: string;
+  bloque?: string;
+  concepto?: string;
+  contenido?: string;
+  ejercicio?: EjercicioDatos;
+  suplementacion?: SuplementoDatos[];
+  principio?: string;
+  recursos?: any[];
+}
+
+export interface CampoRespuesta {
+  id: string;
+  etiqueta: string;
+  tipo: 'texto' | 'numero' | 'escala' | 'reflexion' | 'actividad';
+  min?: number;
+  max?: number;
+  opciones?: { valor: any; etiqueta: string }[];
 }
 
 export interface Leccion {
@@ -65,7 +101,21 @@ export interface Leccion {
   tipo: string;
   emociones_objetivo: string[];
   respuesta_tipo: string;
+  campos_respuesta: CampoRespuesta[];
   datos_leccion: DatosLeccion;
+}
+
+export interface ResponderDiaRequest {
+  dia_numero: number;
+  respuestas: { id: string; valor: any; tipo: string }[];
+}
+
+export interface ResponderDiaResponse {
+  usuario: string;
+  dia_numero: number;
+  respuestas: { id: string; valor: any; tipo: string }[];
+  completado: boolean;
+  fecha: string;
 }
 
 export interface TodayPlanResponse {

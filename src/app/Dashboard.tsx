@@ -5,23 +5,38 @@ import {
 } from "recharts";
 import {
   CheckCircle2, Clock, Heart, Package, Activity, TrendingUp,
-  BookOpen, Send, ChevronDown, ChevronUp, CalendarDays, Flame,
+  BookOpen, Send, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, CheckSquare, Square,
 } from "lucide-react";
 
 import { C, GRAY } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
 import type { Tone } from "@/constants/colors";
 import { Tag } from "@/components/ui/Tag";
-import { AdherBar } from "@/components/ui/AdherBar";
 import { planService } from "../services/plan.service";
 import type { Leccion, PlanProfileResponse } from "../types/api.types";
 
-const SUPPLEMENTS = [
-  { product: "Omega-3 Concentrado",  brand: "Cardiosmile",    dose: "1 sobre · desayuno", tone: "red"   as Tone, icon: Heart },
-  { product: "Multivitamínico",      brand: "Vitamin Shoppe", dose: "2 cáps · mañana",    tone: "green" as Tone, icon: Package },
-  { product: "CoQ10 + Magnesio",     brand: "Cardiosmile",    dose: "1 cáps · cena",      tone: "red"   as Tone, icon: Activity },
-  { product: "Ashwagandha KSM-66",   brand: "Vitamin Shoppe", dose: "600 mg · noche",     tone: "green" as Tone, icon: TrendingUp },
-];
+const SUPPLEMENT_ICONS: Record<string, any> = {
+  'Ashwagandha': TrendingUp,
+  'Magnesio': Activity,
+  'L-Teanina': Heart,
+  'Omega': Activity,
+  'Rhodiola': TrendingUp,
+  'Cardiosmile': Heart,
+  'Coenzima': Package,
+  'Complejo': Package,
+  'Proteína': Package,
+  'Melatonina': Heart,
+  'Ginkgo': Activity,
+};
+
+const SUPPLEMENT_TONES: Record<string, string> = {
+  'Ashwagandha': 'green',
+  'Magnesio': 'green',
+  'Omega': 'red',
+  'Rhodiola': 'green',
+  'Cardiosmile': 'red',
+  'L-Teanina': 'green',
+};
 
 const MOOD = [
   { dia: "L", bien: 5, ansi: 7, ener: 4 },
@@ -47,8 +62,10 @@ export default function Dashboard() {
   const [hitoAlcanzado, setHitoAlcanzado] = useState<number | null>(null);
 
   const [checked, setChecked] = useState<Record<number, boolean>>({});
-  const [answer, setAnswer] = useState("");
+  const [answers, setAnswers] = useState<Record<string, any>>({});
   const [readingOpen, setReadingOpen] = useState(false);
+
+  const setAnswer = (id: string, value: any) => setAnswers(prev => ({ ...prev, [id]: value }));
 
   useEffect(() => {
     const load = async () => {
@@ -77,7 +94,15 @@ export default function Dashboard() {
     if (completando) return;
     setCompletando(true);
     try {
-      const result = await planService.completeDay(answer.trim() || undefined);
+      if (leccion?.campos_respuesta && leccion.campos_respuesta.length > 0) {
+        const respuestas = leccion.campos_respuesta.map(campo => ({
+          id: campo.id,
+          valor: answers[campo.id] ?? '',
+          tipo: campo.tipo
+        }));
+        await planService.responderDiario({ dia_numero: leccion.dia_actual, respuestas });
+      }
+      const result = await planService.completeDay();
       setHitoAlcanzado(result.hito_alcanzado);
       const profileData = await planService.getProfile();
       setProfile(profileData);
@@ -176,15 +201,10 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  {leccion?.datos_leccion?.cita && (
-                    <>
-                      <p className="font-['Lora'] text-sm italic text-[#4A4644] leading-relaxed">
-                        "{leccion.datos_leccion.cita}"
-                      </p>
-                      {leccion.datos_leccion.autor && (
-                        <p className="text-xs font-mono mt-1" style={{ color: tone.text }}>— {leccion.datos_leccion.autor}</p>
-                      )}
-                    </>
+                  {leccion?.datos_leccion?.concepto && (
+                    <p className="font-['Lora'] text-sm italic text-[#4A4644] leading-relaxed">
+                      {leccion.datos_leccion.concepto}
+                    </p>
                   )}
                 </div>
                 <div className="mt-4 flex gap-2">
@@ -270,18 +290,20 @@ export default function Dashboard() {
 
           {/* Supplements */}
           <div
-            
             className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 shadow-sm">
             <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Suplementos · hoy</p>
             <div className="space-y-3">
-              {SUPPLEMENTS.map((s, i) => {
-                const Icon = s.icon;
-                const bc = C[s.tone];
+              {(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => {
+                const toneKey = Object.keys(SUPPLEMENT_TONES).find(k => sup.nombre.includes(k)) ?? sup.nombre;
+                const st = (SUPPLEMENT_TONES[toneKey] ?? 'green') as Tone;
+                const bc = C[st];
                 const done = !!checked[i];
+                const Icon = Object.keys(SUPPLEMENT_ICONS).find(k => sup.nombre.includes(k))
+                  ? SUPPLEMENT_ICONS[Object.keys(SUPPLEMENT_ICONS).find(k => sup.nombre.includes(k))!]
+                  : Pill;
                 return (
                   <div
                     key={i}
-                    
                     className="flex items-center gap-3 p-3 rounded-xl transition-shadow hover:shadow-sm cursor-pointer"
                     onClick={() => setChecked((p) => ({ ...p, [i]: !p[i] }))}
                     style={{ backgroundColor: done ? bc.bg : GRAY.faint }}>
@@ -290,9 +312,8 @@ export default function Dashboard() {
                       <Icon size={14} style={{ color: bc.color }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#3E3A38] truncate">{s.product}</p>
-                      <p className="text-[10px] font-mono text-[#7A7270]">{s.dose}</p>
-                      <AdherBar v={done ? 100 : [92, 84, 78, 70][i]} t={s.tone} />
+                      <p className="text-xs font-semibold text-[#3E3A38] truncate">{sup.nombre}</p>
+                      <p className="text-[10px] font-mono text-[#7A7270]">{sup.dosis} · {sup.horario}</p>
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); setChecked((p) => ({ ...p, [i]: !p[i] })); }}
@@ -303,6 +324,9 @@ export default function Dashboard() {
                   </div>
                 );
               })}
+              {(!leccion?.datos_leccion?.suplementacion || leccion.datos_leccion.suplementacion.length === 0) && (
+                <p className="text-xs text-[#7A7270] text-center py-4">Sin suplementación para hoy</p>
+              )}
             </div>
           </div>
         </div>
@@ -489,36 +513,77 @@ export default function Dashboard() {
                   <div className="border-t px-5 pb-5" style={{ borderColor: tone.border }}>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-5">
                       <div>
-                        {leccion.datos_leccion?.cita && (
+                        {leccion.datos_leccion?.concepto && (
                           <div className="rounded-xl p-4 mb-4 shadow-sm" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
-                            <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">"{leccion.datos_leccion.cita}"</p>
-                            {leccion.datos_leccion.autor && (
-                              <p className="text-xs font-mono mt-2" style={{ color: tone.text }}>— {leccion.datos_leccion.autor}</p>
-                            )}
+                            <p className="text-[10px] font-mono uppercase tracking-wider mb-2" style={{ color: tone.text }}>Concepto clave</p>
+                            <p className="font-['Lora'] text-sm italic text-[#3E3A38] leading-relaxed">{leccion.datos_leccion.concepto}</p>
                           </div>
                         )}
-                        {leccion.datos_leccion?.cuerpo && (
-                          <p className="text-sm text-[#4A4644] leading-relaxed">{leccion.datos_leccion.cuerpo}</p>
+                        {leccion.datos_leccion?.contenido && (
+                          <p className="text-sm text-[#4A4644] leading-relaxed">{leccion.datos_leccion.contenido}</p>
                         )}
                       </div>
 
                       <div>
-                        {leccion.datos_leccion?.pregunta && (
-                          <div className="flex items-start gap-3 mb-3">
-                            <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-mono font-semibold flex-shrink-0 mt-0.5 shadow-sm"
-                              style={{ backgroundColor: tone.soft, color: tone.text }}>1</span>
-                            <p className="text-sm font-medium text-[#3E3A38] leading-snug">{leccion.datos_leccion.pregunta}</p>
+                        {leccion.datos_leccion?.ejercicio && (
+                          <div className="mb-3">
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-1">Ejercicio del día</p>
+                            <p className="text-sm font-semibold text-[#3E3A38]">{leccion.datos_leccion.ejercicio.nombre}</p>
+                            <p className="text-sm text-[#4A4644] mt-1 leading-relaxed">{leccion.datos_leccion.ejercicio.instruccion}</p>
                           </div>
                         )}
                         {!profile?.actividad_completada_hoy ? (
-                          <div>
-                            <textarea
-                              className="w-full rounded-xl border text-sm text-[#3E3A38] p-3 resize-none focus:outline-none bg-[#F7F5F4] transition-all focus:shadow-sm"
-                              style={{ borderColor: "rgba(62,58,56,0.12)", minHeight: 100, fontFamily: "inherit" }}
-                              placeholder="Escribe tu reflexión aquí..."
-                              value={answer}
-                              onChange={(e) => setAnswer(e.target.value)}
-                            />
+                          <div className="space-y-4">
+                            {leccion.campos_respuesta?.map((campo) => (
+                              <div key={campo.id}>
+                                <p className="text-xs font-medium text-[#3E3A38] mb-1.5">{campo.etiqueta}</p>
+                                {campo.tipo === 'escala' && (
+                                  <div>
+                                    <input
+                                      type="range"
+                                      min={campo.min ?? 1}
+                                      max={campo.max ?? 10}
+                                      value={answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)}
+                                      onChange={(e) => setAnswer(campo.id, parseInt(e.target.value))}
+                                      className="w-full accent-current h-2 rounded-full appearance-none cursor-pointer"
+                                      style={{ accentColor: tone.color }}
+                                    />
+                                    <div className="flex justify-between text-[10px] font-mono text-[#7A7270] mt-1">
+                                      <span>{campo.min ?? 1}</span>
+                                      <span className="font-semibold text-sm" style={{ color: tone.color }}>
+                                        {answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)}
+                                      </span>
+                                      <span>{campo.max ?? 10}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {campo.tipo === 'texto' && (
+                                  <textarea
+                                    className="w-full rounded-xl border text-sm text-[#3E3A38] p-3 resize-none focus:outline-none bg-[#F7F5F4] transition-all focus:shadow-sm"
+                                    style={{ borderColor: "rgba(62,58,56,0.12)", minHeight: 80, fontFamily: "inherit" }}
+                                    placeholder="Escribe tu respuesta aquí..."
+                                    value={answers[campo.id] ?? ''}
+                                    onChange={(e) => setAnswer(campo.id, e.target.value)}
+                                  />
+                                )}
+                                {campo.tipo === 'actividad' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setAnswer(campo.id, !answers[campo.id])}
+                                    className="flex items-center gap-2.5 p-3 rounded-xl w-full text-left transition-all hover:shadow-sm"
+                                    style={{ backgroundColor: answers[campo.id] ? tone.bg : GRAY.faint }}>
+                                    {answers[campo.id] ? (
+                                      <CheckSquare size={18} style={{ color: tone.color }} />
+                                    ) : (
+                                      <Square size={18} className="text-[#7A7270]" />
+                                    )}
+                                    <span className="text-sm" style={{ color: answers[campo.id] ? '#3E3A38' : '#7A7270' }}>
+                                      {answers[campo.id] ? 'Completado' : 'Marcar como hecho'}
+                                    </span>
+                                  </button>
+                                )}
+                              </div>
+                            ))}
                             <button
                               disabled={completando}
                               onClick={handleCompleteDay}
@@ -532,7 +597,7 @@ export default function Dashboard() {
                           </div>
                         ) : (
                           <div className="rounded-xl p-4 text-sm text-[#4A4644] leading-relaxed shadow-sm" style={{ backgroundColor: tone.bg }}>
-                            {answer || "Actividad completada"}
+                            Actividad completada
                             <div className="flex items-center gap-1.5 mt-2">
                               <CheckCircle2 size={12} style={{ color: tone.color }} />
                               <span className="text-xs font-mono" style={{ color: tone.text }}>Guardado</span>
