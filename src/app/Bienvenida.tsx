@@ -5,6 +5,8 @@ import { ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { C } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
 import { useAuth } from "../context/AuthContext";
+import { planService } from "../services/plan.service";
+import type { BienvenidaResponse } from "../types/api.types";
 
 // ─── Typewriter hook ──────────────────────────────────────────────────────────
 function useTypewriter(lines: string[], speed = 38, pauseBetween = 520) {
@@ -48,12 +50,17 @@ export default function Bienvenida() {
   const [paused, setPaused] = useState(false);
   const [direction, setDirection] = useState(1);
   const [allSeen, setAllSeen] = useState(false);
+  const [bienvenida, setBienvenida] = useState<BienvenidaResponse | null>(null);
   const nombre = user?.nombre || "";
   const { displayed, done: typeDone } = useTypewriter(
     ["Hola,", `${nombre}.`],
     42,
     340,
   );
+
+  useEffect(() => {
+    planService.getBienvenida().then(setBienvenida).catch(console.error);
+  }, []);
 
   // Auto-advance
   useEffect(() => {
@@ -113,7 +120,7 @@ export default function Bienvenida() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono font-semibold mb-6 self-start"
               style={{ backgroundColor: C.yellow.soft, color: C.yellow.text }}>
               <Heart size={11} style={{ color: C.yellow.color }} />
-              30 días de Inteligencia Emocional
+              {bienvenida?.titulo || "              30 días de Inteligencia Emocional"}
             </div>
 
             <h1 className="font-['Lora'] text-4xl font-semibold text-[#3E3A38] leading-tight mb-4 min-h-[6rem]">
@@ -168,30 +175,9 @@ export default function Bienvenida() {
               </div>
             </motion.div>
 
-            {/* CTA */}
-            <motion.button
-              onClick={() => navigate("/dashboard")}
-              initial={{ opacity: 0, y: 10 }}
-              animate={typeDone ? { opacity: allSeen ? 1 : 0.4, y: 0 } : { opacity: 0, y: 10 }}
-              transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
-              whileHover={{ scale: allSeen ? 1.02 : 1 }}
-              whileTap={{ scale: allSeen ? 0.98 : 1 }}
-              className="flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-semibold text-white self-start"
-              style={{
-                backgroundColor: "#3E3A38",
-                cursor: allSeen ? "pointer" : "default",
-              }}
-              disabled={!allSeen}
-            >
-              Ir al programa
-              <ArrowRight size={16} />
-            </motion.button>
-            <p className="text-xs text-[#7A7270] font-mono mt-2">
-              {allSeen ? "Empieza tu recorrido de 30 días" : "Explora todos los bloques para continuar"}
-            </p>
-          </motion.div>
+            </motion.div>
 
-          {/* ── Divider ── */}
+            {/* ── Divider ── */}
           <div className="hidden lg:block w-px bg-[rgba(62,58,56,0.08)] self-stretch mx-0" />
 
           {/* ── Right: block carousel ── */}
@@ -323,6 +309,28 @@ export default function Bienvenida() {
                 );
               })}
             </div>
+
+            {/* CTA */}
+            <motion.button
+              onClick={() => navigate("/dashboard")}
+              initial={{ opacity: 0, y: 10 }}
+              animate={typeDone ? { opacity: allSeen ? 1 : 0.4, y: 0 } : { opacity: 0, y: 10 }}
+              transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
+              whileHover={{ scale: allSeen ? 1.02 : 1 }}
+              whileTap={{ scale: allSeen ? 0.98 : 1 }}
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl text-sm font-semibold text-white mt-6"
+              style={{
+                backgroundColor: "#3E3A38",
+                cursor: allSeen ? "pointer" : "default",
+              }}
+              disabled={!allSeen}
+            >
+              Ir al programa
+              <ArrowRight size={16} />
+            </motion.button>
+            <p className="text-xs text-[#7A7270] font-mono mt-2 text-center">
+              {allSeen ? "Empieza tu recorrido de 30 días" : "Explora todos los bloques para continuar"}
+            </p>
           </motion.div>
 
         </div>

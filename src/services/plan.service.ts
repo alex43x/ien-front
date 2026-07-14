@@ -6,7 +6,8 @@ import {
   PlanProfileResponse,
   CompleteDayResponse,
   ResponderDiaRequest,
-  ResponderDiaResponse 
+  ResponderDiaResponse,
+  BienvenidaResponse
 } from '../types/api.types';
 
 export const planService = {
@@ -42,6 +43,17 @@ export const planService = {
 
   responderDiario: async (data: ResponderDiaRequest) => {
     const response = await api.post<ResponderDiaResponse>('/plan/responder-dia', data);
+    return response.data;
+  },
+
+  autocompleteTest: async (debiles?: string[]) => {
+    const params = debiles?.length ? { debiles: debiles.join(',') } : {};
+    const response = await api.post<SetupTestResponse>('/plan/testing/autocomplete-test', {}, { params });
+    return response.data;
+  },
+
+  getBienvenida: async () => {
+    const response = await api.get<BienvenidaResponse>('/plan/bienvenida');
     return response.data;
   }
 };
