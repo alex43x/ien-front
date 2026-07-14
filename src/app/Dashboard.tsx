@@ -124,7 +124,27 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
       {import.meta.env.DEV && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await planService.autocompleteTest();
+                const [todayPlan, profileData] = await Promise.all([
+                  planService.getTodayPlan(),
+                  planService.getProfile()
+                ]);
+                setLeccion(todayPlan.leccion);
+                setProfile(profileData);
+                setHitoAlcanzado(null);
+              } catch (error) {
+                console.error("Error auto-completing test:", error);
+              }
+            }}
+            title="Auto-completar test inicial (DEV)"
+            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
+          >
+            DEV: AUTO TEST
+          </button>
           <button
             onClick={async () => {
               try {
@@ -147,6 +167,57 @@ export default function Dashboard() {
           </button>
         </div>
       )}
+
+        {/* ── Estado del plan ── */}
+        {profile && !planLoading && (
+          <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Estado del plan</p>
+              <span className={`text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full ${
+                profile.estado === 'activo' ? 'text-[#1E6860]' :
+                profile.estado === 'completado' ? 'text-[#D9A030]' : 'text-[#E96B6B]'
+              }`}
+                style={{
+                  backgroundColor: profile.estado === 'activo' ? C.green.bg :
+                    profile.estado === 'completado' ? C.yellow.soft : C.red.bg,
+                }}>
+                {profile.estado === 'activo' ? 'Activo' : profile.estado === 'completado' ? 'Completado' : 'Abandonado'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="rounded-xl p-3" style={{ backgroundColor: C.green.bg }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <CalendarDays size={13} style={{ color: C.green.color }} />
+                  <p className="text-[10px] font-mono" style={{ color: C.green.text }}>Inicio</p>
+                </div>
+                <p className="text-sm font-semibold text-[#3E3A38]">
+                  {new Date(profile.fecha_inicio).toLocaleDateString("es-CL", { day: "numeric", month: "short" })}
+                </p>
+              </div>
+              <div className="rounded-xl p-3" style={{ backgroundColor: C.yellow.bg }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 size={13} style={{ color: C.yellow.color }} />
+                  <p className="text-[10px] font-mono" style={{ color: C.yellow.text }}>Completados</p>
+                </div>
+                <p className="text-sm font-semibold text-[#3E3A38]">{profile.dias_completados} / {profile.dias_totales}</p>
+              </div>
+              <div className="rounded-xl p-3" style={{ backgroundColor: C.red.bg }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <Flame size={13} style={{ color: C.red.color }} />
+                  <p className="text-[10px] font-mono" style={{ color: C.red.text }}>Racha actual</p>
+                </div>
+                <p className="text-sm font-semibold text-[#3E3A38]">{profile.racha_dias} días</p>
+              </div>
+              <div className="rounded-xl p-3" style={{ backgroundColor: C.green.bg }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp size={13} style={{ color: C.green.color }} />
+                  <p className="text-[10px] font-mono" style={{ color: C.green.text }}>Mejor racha</p>
+                </div>
+                <p className="text-sm font-semibold text-[#3E3A38]">{profile.racha_maxima} días</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Row 1: Hero card + Progress + Supplements ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -209,7 +280,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-4 flex gap-2">
                   <button
-                    onClick={() => navigate("/lectura")}
+                    onClick={() => navigate("/bloque-intro")}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90 shadow-sm"
                     style={{ backgroundColor: tone.color }}>
                     <BookOpen size={13} />
@@ -421,60 +492,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
-        {/* ── Row 3: Plan status ── */}
-        {profile && !planLoading && (
-          <div
-            
-            className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] p-5 shadow-sm"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Estado del plan</p>
-              <span className={`text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full ${
-                profile.estado === 'activo' ? 'text-[#1E6860]' :
-                profile.estado === 'completado' ? 'text-[#D9A030]' : 'text-[#E96B6B]'
-              }`}
-                style={{
-                  backgroundColor: profile.estado === 'activo' ? C.green.bg :
-                    profile.estado === 'completado' ? C.yellow.soft : C.red.bg,
-                }}>
-                {profile.estado === 'activo' ? 'Activo' : profile.estado === 'completado' ? 'Completado' : 'Abandonado'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-xl p-3" style={{ backgroundColor: GRAY.faint }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarDays size={13} className="text-[#7A7270]" />
-                  <p className="text-[10px] font-mono text-[#7A7270]">Inicio</p>
-                </div>
-                <p className="text-sm font-semibold text-[#3E3A38]">
-                  {new Date(profile.fecha_inicio).toLocaleDateString("es-CL", { day: "numeric", month: "short" })}
-                </p>
-              </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor: GRAY.faint }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 size={13} className="text-[#7A7270]" />
-                  <p className="text-[10px] font-mono text-[#7A7270]">Completados</p>
-                </div>
-                <p className="text-sm font-semibold text-[#3E3A38]">{profile.dias_completados} / {profile.dias_totales}</p>
-              </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor: GRAY.faint }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <Flame size={13} style={{ color: C.yellow.color }} />
-                  <p className="text-[10px] font-mono text-[#7A7270]">Racha actual</p>
-                </div>
-                <p className="text-sm font-semibold text-[#3E3A38]">{profile.racha_dias} días</p>
-              </div>
-              <div className="rounded-xl p-3" style={{ backgroundColor: GRAY.faint }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp size={13} className="text-[#7A7270]" />
-                  <p className="text-[10px] font-mono text-[#7A7270]">Mejor racha</p>
-                </div>
-                <p className="text-sm font-semibold text-[#3E3A38]">{profile.racha_maxima} días</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* ── Row 4: Reading panel ── */}
         {leccion && (

@@ -119,6 +119,9 @@ export interface ResponderDiaResponse {
 }
 
 export interface TodayPlanResponse {
+  dia_actual: number;
+  cabecera: string | null;
+  contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
 
@@ -259,4 +262,20 @@ export interface SendRemindersRequest {
 export interface SendRemindersResponse {
   enviados: number;
   fallidos: number;
+}
+
+export interface BienvenidaCompetencia {
+  nombre: string;
+  descripcion: string;
+  respuesta_tipo: string;
+}
+
+export interface BienvenidaResponse {
+  tipo: string;
+  titulo: string;
+  contenido: {
+    mensaje: string;
+    competencias: BienvenidaCompetencia[];
+    llamada_a_accion: string;
+  };
 }

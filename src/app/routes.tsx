@@ -13,6 +13,7 @@ import Register from "./Register";
 import Bienvenida from "./Bienvenida";
 import Activar from "./Activar";
 import Lectura from "./Lectura";
+import BloqueIntro from "./BloqueIntro";
 import Preguntas from "./Preguntas";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminRoute from "../components/AdminRoute";
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/bienvenida", element: <Bienvenida /> },
       { path: "/lectura", element: <Lectura /> },
+      { path: "/bloque-intro", element: <BloqueIntro /> },
       { path: "/preguntas", element: <Preguntas /> },
     ],
   },
