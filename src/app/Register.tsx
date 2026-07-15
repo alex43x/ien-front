@@ -46,7 +46,7 @@ export default function Register() {
           </div>
 
           <div className="relative z-10">
-            <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
+            <img src="/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
           </div>
 
           <div className="relative z-10 max-w-xl">
@@ -78,7 +78,7 @@ export default function Register() {
         <div className="flex flex-1 items-center justify-center bg-[#FCFAF8] p-6 sm:p-8 lg:p-10">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
-              <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
+              <img src="/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
             </div>
 
             <div className="mb-8">

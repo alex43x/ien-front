@@ -44,7 +44,7 @@ export default function AdminLayout() {
         <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-[rgba(62,58,56,0.09)] transform transition-transform duration-200 lg:translate-x-0 lg:static lg:inset-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 px-6 h-16 border-b border-[rgba(62,58,56,0.09)]">
-              <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-8 w-auto" />
+              <img src="/imports/logo_ien-03.png" alt="IEN" className="h-8 w-auto" />
               <span className="text-sm font-semibold text-[#3E3A38]">Admin</span>
             </div>
 

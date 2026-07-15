@@ -28,7 +28,7 @@ export default function PatientLayout() {
   return (
     <div className="min-h-screen bg-[#F7F5F4]" style={{ fontFamily: "'Inter', sans-serif" }}>
       <header className="bg-white/80 backdrop-blur-md border-b border-[rgba(62,58,56,0.09)] px-6 py-3 flex items-center justify-between sticky top-0 z-50">
-        <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
+        <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
 
         <div className="flex items-center gap-3">
           <button className="relative w-8 h-8 rounded-xl flex items-center justify-center text-[#7A7270] hover:bg-[#F0EDEC] transition-all">

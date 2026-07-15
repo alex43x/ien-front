@@ -42,7 +42,7 @@ export default function Activar() {
           <button onClick={() => navigate("/register")} className="text-[#7A7270] hover:text-[#3E3A38] transition-colors">
             <ChevronLeft size={20} />
           </button>
-          <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
+          <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-[#7A7270]">
           <span className="w-4 h-4 rounded-full bg-[#3E3A38] text-white text-[9px] flex items-center justify-center font-bold">2</span>

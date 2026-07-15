@@ -44,7 +44,7 @@ export default function Login() {
           </div>
 
           <div className="relative z-10">
-            <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
+            <img src="/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
           </div>
 
           <div className="relative z-10 max-w-xl">
@@ -83,7 +83,7 @@ export default function Login() {
         <div className="flex flex-1 items-center justify-center bg-[#FCFAF8] p-6 sm:p-8 lg:p-10">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
-              <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
+              <img src="/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
             </div>
 
             <div className="mb-8">
@@ -183,9 +183,9 @@ export default function Login() {
                 Con el apoyo de
               </p>
               <div className="flex items-center justify-center gap-12">
-                <img src="/src/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-24 w-auto object-contain" />
+                <img src="/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-24 w-auto object-contain" />
                 <div className="h-20 w-px bg-[#E8E2DB]" />
-                <img src="/src/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-24 w-auto object-contain" />
+                <img src="/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-24 w-auto object-contain" />
               </div>
             </div>
           </div>

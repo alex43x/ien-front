@@ -100,7 +100,7 @@ export default function Bienvenida() {
 
       {/* Header */}
       <header className="bg-white border-b border-[rgba(62,58,56,0.09)] px-6 py-3 flex items-center justify-between">
-        <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
+        <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
         <div className="flex items-center gap-2 text-xs font-mono text-[#7A7270]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#4DAAA0]" />
           Programa activo
@@ -159,14 +159,14 @@ export default function Bienvenida() {
               <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-3">Tus aliados en este camino</p>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-6 p-6 rounded-xl" style={{ backgroundColor: C.red.bg }}>
-                  <img src="/src/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-28 w-auto object-contain rounded-lg" />
+                  <img src="/imports/cardiosmile.jpeg" alt="Cardiosmile" className="h-28 w-auto object-contain rounded-lg" />
                   <div>
                     <p className="text-lg font-semibold text-[#3E3A38]">Cardiosmile</p>
                     <p className="text-sm text-[#7A7270]">Salud cardiovascular como acto de amor propio</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6 p-6 rounded-xl" style={{ backgroundColor: C.green.bg }}>
-                  <img src="/src/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-28 w-auto object-contain rounded-lg" />
+                  <img src="/imports/vitamin_shoppe.jpeg" alt="Vitamin Shoppe" className="h-28 w-auto object-contain rounded-lg" />
                   <div>
                     <p className="text-lg font-semibold text-[#3E3A38]">Vitamin Shoppe</p>
                     <p className="text-sm text-[#7A7270]">Suplementación de calidad para tu energía vital</p>

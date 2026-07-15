@@ -16,7 +16,7 @@ export function PageHeader({ onBack, rightContent, bottomContent }: PageHeaderPr
             <ChevronLeft size={20} />
           </button>
         )}
-        <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
+        <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
         {bottomContent}
       </div>
       {rightContent}
