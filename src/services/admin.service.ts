@@ -4,6 +4,8 @@ import {
   PaginacionPacientes,
   PerfilPaciente,
   ProgresoPaciente,
+  TestInicialResponse,
+  DiasPlanResponse,
   ReportesUsuarios,
   GraficaSemanal,
   Sucursal,
@@ -32,6 +34,16 @@ export const adminService = {
 
   progresoPaciente: async (usuarioId: string) => {
     const response = await api.get<ProgresoPaciente>(`/admin/pacientes/${usuarioId}/progreso`);
+    return response.data;
+  },
+
+  testInicialPaciente: async (usuarioId: string) => {
+    const response = await api.get<TestInicialResponse>(`/admin/pacientes/${usuarioId}/test-inicial`);
+    return response.data;
+  },
+
+  actividadesPaciente: async (usuarioId: string) => {
+    const response = await api.get<DiasPlanResponse>(`/admin/pacientes/${usuarioId}/actividades`);
     return response.data;
   },
 

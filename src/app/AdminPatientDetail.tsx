@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { ChevronLeft, Mail, Store, Calendar, Activity, Zap, Target } from "lucide-react";
 import { adminService } from "../services/admin.service";
-import type { PerfilPaciente, ProgresoPaciente } from "../types/api.types";
+import type { PerfilPaciente, ProgresoPaciente, TestInicialResponse, DiaPlan } from "../types/api.types";
 import { C } from "../constants/colors";
+import TestInicialResultados from "../components/TestInicialResultados";
+import ActividadesDiariasLista from "../components/ActividadesDiariasLista";
+
+type Tab = "progreso" | "test" | "actividades";
 
 export default function AdminPatientDetail() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +15,11 @@ export default function AdminPatientDetail() {
   const [profile, setProfile] = useState<PerfilPaciente | null>(null);
   const [progress, setProgress] = useState<ProgresoPaciente | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>("progreso");
+  const [testInicial, setTestInicial] = useState<TestInicialResponse | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [actividades, setActividades] = useState<DiaPlan[]>([]);
+  const [actividadesLoading, setActividadesLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -30,6 +39,36 @@ export default function AdminPatientDetail() {
     };
     fetchData();
   }, [id]);
+
+  const loadTestInicial = async () => {
+    if (testInicial || testLoading || !id) return;
+    setTestLoading(true);
+    try {
+      const data = await adminService.testInicialPaciente(id);
+      setTestInicial(data);
+    } catch (_) {
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
+  const loadActividades = async () => {
+    if (actividades.length > 0 || actividadesLoading || !id) return;
+    setActividadesLoading(true);
+    try {
+      const data = await adminService.actividadesPaciente(id);
+      setActividades(data.dias);
+    } catch (_) {
+    } finally {
+      setActividadesLoading(false);
+    }
+  };
+
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    if (tab === "test") loadTestInicial();
+    if (tab === "actividades") loadActividades();
+  };
 
   const statusColor = (estado: string) => {
     if (estado === "activo") return { bg: C.green.bg, text: C.green.text, border: C.green.border };
@@ -104,6 +143,7 @@ export default function AdminPatientDetail() {
 
       {progress && (
         <>
+          {/* Stats row */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
               { label: "Día actual", value: `${progress.dia_actual}/30`, icon: Activity, tone: C.green },
@@ -126,70 +166,124 @@ export default function AdminPatientDetail() {
             })}
           </div>
 
-          <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Progreso del plan</p>
-            <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Días completados</h2>
-            <div className="mt-4 grid grid-cols-10 sm:grid-cols-15 gap-2">
-              {Array.from({ length: 30 }, (_, i) => {
-                const dayNum = i + 1;
-                const completed = progress.progreso_diario?.some((d: any) => d.dia_numero === dayNum && d.completado);
-                const isCurrent = dayNum === progress.dia_actual;
-                return (
-                  <div
-                    key={dayNum}
-                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-semibold ${
-                      completed
-                        ? "bg-[#4DAAA0] text-white"
-                        : isCurrent
-                        ? "bg-[#D9A030] text-white"
-                        : "bg-[#F0EDEC] text-[#7A7270]"
-                    }`}
-                    title={`Día ${dayNum}${completed ? " - Completado" : isCurrent ? " - Actual" : " - Pendiente"}`}
-                  >
-                    {dayNum}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex items-center gap-4 text-[11px] text-[#7A7270]">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-[#4DAAA0]" /> Completado
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-[#D9A030]" /> Actual
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded bg-[#F0EDEC]" /> Pendiente
-              </div>
-            </div>
+          {/* Tabs */}
+          <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-2 flex gap-1">
+            {([
+              { key: "progreso" as Tab, label: "Progreso" },
+              { key: "test" as Tab, label: "Test Inicial" },
+              { key: "actividades" as Tab, label: "Actividades Diarias" },
+            ]).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => handleTabChange(tab.key)}
+                className={`flex-1 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
+                  activeTab === tab.key
+                    ? "bg-[#3E3A38] text-white shadow-sm"
+                    : "text-[#7A7270] hover:bg-[#F7F5F4]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Información del plan</p>
-            <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Detalles</h2>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-[#F7F5F4] p-4">
-                <p className="text-[10px] font-mono uppercase text-[#7A7270]">Fecha de inicio</p>
-                <p className="text-sm font-semibold text-[#3E3A38] mt-1">{new Date(progress.fecha_inicio).toLocaleDateString()}</p>
-              </div>
-              <div className="rounded-2xl bg-[#F7F5F4] p-4">
-                <p className="text-[10px] font-mono uppercase text-[#7A7270]">Última actividad</p>
-                <p className="text-sm font-semibold text-[#3E3A38] mt-1">{new Date(progress.ultima_fecha_actividad).toLocaleDateString()}</p>
-              </div>
-              {progress.hitos_alcanzados.length > 0 && (
-                <div className="rounded-2xl bg-[#F7F5F4] p-4 sm:col-span-2">
-                  <p className="text-[10px] font-mono uppercase text-[#7A7270]">Hitos alcanzados</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {progress.hitos_alcanzados.map((hito) => (
-                      <span key={hito} className="inline-flex items-center rounded-full bg-[#E6F5F3] px-3 py-1 text-[11px] font-semibold text-[#1E6860]">
-                        Día {hito}
-                      </span>
-                    ))}
+          {/* Tab content */}
+          {activeTab === "progreso" && (
+            <>
+              <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Progreso del plan</p>
+                <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Días completados</h2>
+                <div className="mt-4 grid grid-cols-10 sm:grid-cols-15 gap-2">
+                  {Array.from({ length: 30 }, (_, i) => {
+                    const dayNum = i + 1;
+                    const completed = progress.progreso_diario?.some((d: any) => d.dia_numero === dayNum && d.completado);
+                    const isCurrent = dayNum === progress.dia_actual;
+                    return (
+                      <div
+                        key={dayNum}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-semibold ${
+                          completed
+                            ? "bg-[#4DAAA0] text-white"
+                            : isCurrent
+                            ? "bg-[#D9A030] text-white"
+                            : "bg-[#F0EDEC] text-[#7A7270]"
+                        }`}
+                        title={`Día ${dayNum}${completed ? " - Completado" : isCurrent ? " - Actual" : " - Pendiente"}`}
+                      >
+                        {dayNum}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 flex items-center gap-4 text-[11px] text-[#7A7270]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded bg-[#4DAAA0]" /> Completado
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded bg-[#D9A030]" /> Actual
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded bg-[#F0EDEC]" /> Pendiente
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Información del plan</p>
+                <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Detalles</h2>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-[#F7F5F4] p-4">
+                    <p className="text-[10px] font-mono uppercase text-[#7A7270]">Fecha de inicio</p>
+                    <p className="text-sm font-semibold text-[#3E3A38] mt-1">{new Date(progress.fecha_inicio).toLocaleDateString()}</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#F7F5F4] p-4">
+                    <p className="text-[10px] font-mono uppercase text-[#7A7270]">Última actividad</p>
+                    <p className="text-sm font-semibold text-[#3E3A38] mt-1">{new Date(progress.ultima_fecha_actividad).toLocaleDateString()}</p>
+                  </div>
+                  {progress.hitos_alcanzados.length > 0 && (
+                    <div className="rounded-2xl bg-[#F7F5F4] p-4 sm:col-span-2">
+                      <p className="text-[10px] font-mono uppercase text-[#7A7270]">Hitos alcanzados</p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {progress.hitos_alcanzados.map((hito) => (
+                          <span key={hito} className="inline-flex items-center rounded-full bg-[#E6F5F3] px-3 py-1 text-[11px] font-semibold text-[#1E6860]">
+                            Día {hito}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === "test" && (
+            <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
+              {testLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+                </div>
+              ) : testInicial ? (
+                <TestInicialResultados data={testInicial} />
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-sm text-[#7A7270]">El paciente aún no completó el test inicial</p>
                 </div>
               )}
             </div>
-          </div>
+          )}
+
+          {activeTab === "actividades" && (
+            <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-6">
+              {actividadesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+                </div>
+              ) : (
+                <ActividadesDiariasLista dias={actividades} />
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -264,6 +264,37 @@ export interface SendRemindersResponse {
   fallidos: number;
 }
 
+// Test Inicial completado
+export interface RespuestaTestIndividual {
+  pregunta_numero: number;
+  competencia: string;
+  competencia_label: string;
+  score: number;
+  texto: string;
+}
+
+export interface TestInicialResponse {
+  fecha_completado: string;
+  puntuaciones_por_competencia: PuntuacionCompetencia[];
+  competencias_a_mejorar: string[];
+  respuestas: RespuestaTestIndividual[];
+}
+
+// Actividades diarias
+export interface DiaPlan {
+  dia_numero: number;
+  completado: boolean;
+  fecha_completado: string | null;
+  respuesta_usuario: { id: string; valor: any; tipo: string }[] | null;
+  cabecera: string | null;
+  contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
+  leccion: Leccion | null;
+}
+
+export interface DiasPlanResponse {
+  dias: DiaPlan[];
+}
+
 export interface BienvenidaCompetencia {
   nombre: string;
   descripcion: string;

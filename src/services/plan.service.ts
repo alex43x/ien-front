@@ -5,7 +5,9 @@ import {
   TodayPlanResponse,
   PlanProfileResponse,
   CompleteDayResponse,
-  BienvenidaResponse
+  BienvenidaResponse,
+  TestInicialResponse,
+  DiasPlanResponse,
 } from '../types/api.types';
 
 export const planService = {
@@ -48,5 +50,16 @@ export const planService = {
   getBienvenida: async () => {
     const response = await api.get<BienvenidaResponse>('/plan/bienvenida');
     return response.data;
-  }
+  },
+
+  getTestInicial: async () => {
+    const response = await api.get<TestInicialResponse>('/plan/test-inicial');
+    return response.data;
+  },
+
+  getDays: async (completados?: boolean) => {
+    const params = completados ? { completados: 'true' } : {};
+    const response = await api.get<DiasPlanResponse>('/plan/days', { params });
+    return response.data;
+  },
 };

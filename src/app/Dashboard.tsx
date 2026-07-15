@@ -5,15 +5,17 @@ import {
 } from "recharts";
 import {
   CheckCircle2, Clock, Heart, Package, Activity, TrendingUp,
-  BookOpen, Send, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, CheckSquare, Square,
+  BookOpen, Send, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, CheckSquare, Square, ShieldCheck,
 } from "lucide-react";
 
 import { C, GRAY } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
 import type { Tone } from "@/constants/colors";
 import { Tag } from "@/components/ui/Tag";
+import TestInicialResultados from "@/components/TestInicialResultados";
+import ActividadesDiariasLista from "@/components/ActividadesDiariasLista";
 import { planService } from "../services/plan.service";
-import type { Leccion, PlanProfileResponse } from "../types/api.types";
+import type { Leccion, PlanProfileResponse, TestInicialResponse, DiaPlan } from "../types/api.types";
 
 const SUPPLEMENT_ICONS: Record<string, any> = {
   'Ashwagandha': TrendingUp,
@@ -66,6 +68,14 @@ export default function Dashboard() {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [readingOpen, setReadingOpen] = useState(false);
 
+  const [testInicial, setTestInicial] = useState<TestInicialResponse | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testOpen, setTestOpen] = useState(false);
+
+  const [actividades, setActividades] = useState<DiaPlan[]>([]);
+  const [actividadesLoading, setActividadesLoading] = useState(false);
+  const [actividadesOpen, setActividadesOpen] = useState(false);
+
   const setAnswer = (id: string, value: any) => setAnswers(prev => ({ ...prev, [id]: value }));
 
   useEffect(() => {
@@ -90,6 +100,30 @@ export default function Dashboard() {
     };
     load();
   }, []);
+
+  const loadTestInicial = async () => {
+    if (testInicial || testLoading) return;
+    setTestLoading(true);
+    try {
+      const data = await planService.getTestInicial();
+      setTestInicial(data);
+    } catch (_) {
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
+  const loadActividades = async () => {
+    if (actividades.length > 0 || actividadesLoading) return;
+    setActividadesLoading(true);
+    try {
+      const data = await planService.getDays(true);
+      setActividades(data.dias);
+    } catch (_) {
+    } finally {
+      setActividadesLoading(false);
+    }
+  };
 
   const handleCompleteDay = async () => {
     if (completando) return;
@@ -647,6 +681,70 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
+          </div>
+        )}
+
+        {/* ── Row 5: Test Inicial + Actividades Diarias ── */}
+        {profile && !planError && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Test Inicial */}
+            <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] shadow-sm overflow-hidden">
+              <button
+                className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#FCFAF8] transition-colors"
+                onClick={() => { setTestOpen(!testOpen); if (!testOpen) loadTestInicial(); }}
+              >
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: C.red.soft }}>
+                  <ShieldCheck size={16} style={{ color: C.red.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Diagnóstico</p>
+                  <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">Mi Test Inicial</p>
+                </div>
+                {testOpen ? <ChevronUp size={16} className="text-[#7A7270]" /> : <ChevronDown size={16} className="text-[#7A7270]" />}
+              </button>
+              {testOpen && (
+                <div className="border-t border-[rgba(62,58,56,0.09)] px-5 pb-5 pt-4">
+                  {testLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+                    </div>
+                  ) : testInicial ? (
+                    <TestInicialResultados data={testInicial} />
+                  ) : (
+                    <p className="text-xs text-[#7A7270] text-center py-4">No disponible</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Actividades Diarias */}
+            <div className="bg-white rounded-2xl border border-[rgba(62,58,56,0.09)] shadow-sm overflow-hidden">
+              <button
+                className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-[#FCFAF8] transition-colors"
+                onClick={() => { setActividadesOpen(!actividadesOpen); if (!actividadesOpen) loadActividades(); }}
+              >
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: C.green.soft }}>
+                  <CheckCircle2 size={16} style={{ color: C.green.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Actividades</p>
+                  <p className="font-['Lora'] font-semibold text-[#3E3A38] truncate mt-0.5">Mis Actividades Diarias</p>
+                </div>
+                {actividadesOpen ? <ChevronUp size={16} className="text-[#7A7270]" /> : <ChevronDown size={16} className="text-[#7A7270]" />}
+              </button>
+              {actividadesOpen && (
+                <div className="border-t border-[rgba(62,58,56,0.09)] px-5 pb-5 pt-4">
+                  {actividadesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+                    </div>
+                  ) : (
+                    <ActividadesDiariasLista dias={actividades} />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
