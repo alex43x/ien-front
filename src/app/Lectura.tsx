@@ -13,6 +13,7 @@ export default function Lectura() {
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [completando, setCompletando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const setAnswer = (id: string, value: any) => setAnswers(prev => ({ ...prev, [id]: value }));
@@ -68,17 +69,32 @@ export default function Lectura() {
 
   const handleComplete = async () => {
     if (completando || !leccion) return;
-    setCompletando(true);
-    try {
-      if (leccion.campos_respuesta && leccion.campos_respuesta.length > 0) {
-        const respuestas = leccion.campos_respuesta.map(campo => ({
-          id: campo.id,
-          valor: answers[campo.id] ?? '',
-          tipo: campo.tipo
-        }));
-        await planService.responderDiario({ dia_numero: leccion.dia_actual, respuestas });
+
+    if (leccion.campos_respuesta && leccion.campos_respuesta.length > 0) {
+      const faltan = leccion.campos_respuesta.filter(c => {
+        const v = answers[c.id];
+        if (c.tipo === 'escala') return v === undefined;
+        if (c.tipo === 'actividad') return !v;
+        return v === undefined || v === '';
+      });
+      if (faltan.length > 0) {
+        setError(`Completá: ${faltan.map(c => c.etiqueta).join(', ')}`);
+        return;
       }
-      await planService.completeDay();
+    }
+
+    setCompletando(true);
+    setError(null);
+    try {
+      const respuesta_usuario = leccion.campos_respuesta?.length
+        ? leccion.campos_respuesta.map(c => ({
+            id: c.id,
+            valor: answers[c.id],
+            tipo: c.tipo
+          }))
+        : undefined;
+
+      await planService.completeDay(respuesta_usuario);
       navigate("/dashboard");
     } catch (err) {
       console.error("Error al completar actividad:", err);
@@ -195,7 +211,7 @@ export default function Lectura() {
                           <div className="bg-[#F7F5F4] rounded-xl p-4">
                             <div className="flex gap-1.5 justify-between mb-3">
                               {Array.from({ length: (campo.max ?? 10) - (campo.min ?? 1) + 1 }, (_, i) => (campo.min ?? 1) + i).map((val) => {
-                                const selected = (answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)) === val;
+                                const selected = answers[campo.id] === val;
                                 return (
                                   <button
                                     key={val}
@@ -288,6 +304,11 @@ export default function Lectura() {
 
           {/* CTA */}
           <div className="sticky bottom-0 pb-6 mt-8">
+            {error && (
+              <p className="rounded-xl bg-[#FAEAEA] px-3 py-2 text-xs font-medium text-[#E96B6B] mb-3">
+                {error}
+              </p>
+            )}
             <div className={`transition-all duration-500 ${canContinue ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2"}`}>
               <button
                 disabled={!canContinue || completando}

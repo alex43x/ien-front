@@ -60,6 +60,7 @@ export default function Dashboard() {
   const [planError, setPlanError] = useState<string | null>(null);
   const [completando, setCompletando] = useState(false);
   const [hitoAlcanzado, setHitoAlcanzado] = useState<number | null>(null);
+  const [dayError, setDayError] = useState<string | null>(null);
 
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -92,17 +93,32 @@ export default function Dashboard() {
 
   const handleCompleteDay = async () => {
     if (completando) return;
-    setCompletando(true);
-    try {
-      if (leccion?.campos_respuesta && leccion.campos_respuesta.length > 0) {
-        const respuestas = leccion.campos_respuesta.map(campo => ({
-          id: campo.id,
-          valor: answers[campo.id] ?? '',
-          tipo: campo.tipo
-        }));
-        await planService.responderDiario({ dia_numero: leccion.dia_actual, respuestas });
+
+    if (leccion?.campos_respuesta && leccion.campos_respuesta.length > 0) {
+      const faltan = leccion.campos_respuesta.filter(c => {
+        const v = answers[c.id];
+        if (c.tipo === 'escala') return v === undefined;
+        if (c.tipo === 'actividad') return !v;
+        return v === undefined || v === '';
+      });
+      if (faltan.length > 0) {
+        setDayError(`Completá: ${faltan.map(c => c.etiqueta).join(', ')}`);
+        return;
       }
-      const result = await planService.completeDay();
+    }
+
+    setCompletando(true);
+    setDayError(null);
+    try {
+      const respuesta_usuario = leccion?.campos_respuesta?.length
+        ? leccion.campos_respuesta.map(c => ({
+            id: c.id,
+            valor: answers[c.id],
+            tipo: c.tipo
+          }))
+        : undefined;
+
+      const result = await planService.completeDay(respuesta_usuario);
       setHitoAlcanzado(result.hito_alcanzado);
       const profileData = await planService.getProfile();
       setProfile(profileData);
@@ -560,7 +576,7 @@ export default function Dashboard() {
                                       type="range"
                                       min={campo.min ?? 1}
                                       max={campo.max ?? 10}
-                                      value={answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)}
+                                      value={answers[campo.id] ?? (campo.min ?? 1)}
                                       onChange={(e) => setAnswer(campo.id, parseInt(e.target.value))}
                                       className="w-full accent-current h-2 rounded-full appearance-none cursor-pointer"
                                       style={{ accentColor: tone.color }}
@@ -568,7 +584,7 @@ export default function Dashboard() {
                                     <div className="flex justify-between text-[10px] font-mono text-[#7A7270] mt-1">
                                       <span>{campo.min ?? 1}</span>
                                       <span className="font-semibold text-sm" style={{ color: tone.color }}>
-                                        {answers[campo.id] ?? Math.round(((campo.min ?? 1) + (campo.max ?? 10)) / 2)}
+                                        {answers[campo.id] ?? '—'}
                                       </span>
                                       <span>{campo.max ?? 10}</span>
                                     </div>
@@ -611,6 +627,11 @@ export default function Dashboard() {
                                 : <><Send size={11} /> Completar actividad</>
                               }
                             </button>
+                            {dayError && (
+                              <p className="mt-2 rounded-xl bg-[#FAEAEA] px-3 py-2 text-xs font-medium text-[#E96B6B]">
+                                {dayError}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <div className="rounded-xl p-4 text-sm text-[#4A4644] leading-relaxed shadow-sm" style={{ backgroundColor: tone.bg }}>
