@@ -39,7 +39,7 @@ function renderValorCampo(campo: { id: string; valor: any; tipo: string }, toneC
       </div>
     );
   }
-  if (campo.tipo === "actividad") {
+  if (campo.tipo === "accion") {
     return (
       <div className="flex items-center gap-2">
         <CheckCircle2 size={14} style={{ color: campo.valor ? C.green.color : GRAY.mid }} />

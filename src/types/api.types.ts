@@ -89,7 +89,7 @@ export interface DatosLeccion {
 export interface CampoRespuesta {
   id: string;
   etiqueta: string;
-  tipo: 'texto' | 'numero' | 'escala' | 'reflexion' | 'actividad';
+  tipo: 'texto' | 'numero' | 'escala' | 'reflexion' | 'accion';
   min?: number;
   max?: number;
   opciones?: { valor: any; etiqueta: string }[];

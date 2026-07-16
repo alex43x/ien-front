@@ -132,7 +132,7 @@ export default function Dashboard() {
       const faltan = leccion.campos_respuesta.filter(c => {
         const v = answers[c.id];
         if (c.tipo === 'escala') return v === undefined;
-        if (c.tipo === 'actividad') return !v;
+        if (c.tipo === 'accion') return !v;
         return v === undefined || v === '';
       });
       if (faltan.length > 0) {
@@ -633,7 +633,7 @@ export default function Dashboard() {
                                     onChange={(e) => setAnswer(campo.id, e.target.value)}
                                   />
                                 )}
-                                {campo.tipo === 'actividad' && (
+                                {campo.tipo === 'accion' && (
                                   <button
                                     type="button"
                                     onClick={() => setAnswer(campo.id, !answers[campo.id])}
