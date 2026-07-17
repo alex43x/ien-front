@@ -7,6 +7,7 @@ import {
   Store,
   Package,
   QrCode,
+  Mail,
   UserPlus,
   LogOut,
   Menu,
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { label: "Sucursales", path: "/admin/sucursales", icon: Store },
   { label: "Productos", path: "/admin/productos", icon: Package },
   { label: "Códigos", path: "/admin/codigos", icon: QrCode },
+  { label: "Plantillas", path: "/admin/plantillas", icon: Mail },
   { label: "Crear Admin", path: "/admin/crear-admin", icon: UserPlus },
 ];
 

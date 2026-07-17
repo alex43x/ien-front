@@ -7,6 +7,7 @@ import AdminReports from "./AdminReports";
 import AdminStores from "./AdminStores";
 import AdminProducts from "./AdminProducts";
 import AdminCodes from "./AdminCodes";
+import AdminEmails from "./AdminEmails";
 import AdminCreateBusinessAdmin from "./AdminCreateBusinessAdmin";
 import Login from "./Login";
 import Register from "./Register";
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
           { path: "/admin/sucursales", element: <AdminStores /> },
           { path: "/admin/productos", element: <AdminProducts /> },
           { path: "/admin/codigos", element: <AdminCodes /> },
+          { path: "/admin/plantillas", element: <AdminEmails /> },
           { path: "/admin/crear-admin", element: <AdminCreateBusinessAdmin /> },
         ],
       },
