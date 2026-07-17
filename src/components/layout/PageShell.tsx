@@ -7,7 +7,7 @@ interface PageShellProps {
 
 export function PageShell({ children, className = "" }: PageShellProps) {
   return (
-    <div className={`min-h-screen bg-[#F7F5F4] ${className}`}
+    <div className={`min-h-screen bg-background ${className}`}
       style={{ fontFamily: "'Inter', sans-serif" }}>
       {children}
     </div>

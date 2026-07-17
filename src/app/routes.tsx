@@ -36,6 +36,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/bienvenida", element: <Bienvenida /> },
       { path: "/lectura", element: <Lectura /> },
+      { path: "/lectura/:diaNumero", element: <Lectura /> },
       { path: "/bloque-intro", element: <BloqueIntro /> },
       { path: "/preguntas", element: <Preguntas /> },
     ],

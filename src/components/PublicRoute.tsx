@@ -6,8 +6,8 @@ export default function PublicRoute() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F7F5F4]">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
       </div>
     );
   }

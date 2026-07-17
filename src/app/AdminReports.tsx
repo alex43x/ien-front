@@ -47,7 +47,7 @@ export default function AdminReports() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#D9A030]/30 border-t-[#D9A030]" />
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
       </div>
     );
   }
@@ -55,8 +55,8 @@ export default function AdminReports() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div>
-        <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Reportes</p>
-        <h1 className="font-['Lora'] text-2xl font-semibold text-[#3E3A38] mt-1">Usuarios y actividad</h1>
+        <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Reportes</p>
+        <h1 className="font-['Lora'] text-2xl font-semibold text-foreground mt-1">Usuarios y actividad</h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -68,11 +68,11 @@ export default function AdminReports() {
         ].map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
+            <div key={item.label} className="bg-card rounded-3xl border border-border p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">{item.label}</p>
-                  <p className="mt-3 text-3xl font-['Lora'] font-semibold text-[#3E3A38]">{item.value}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{item.label}</p>
+                  <p className="mt-3 text-3xl font-['Lora'] font-semibold text-foreground">{item.value}</p>
                 </div>
                 <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ backgroundColor: item.tone.soft, color: item.tone.color }}>
                   <Icon size={20} />
@@ -84,95 +84,95 @@ export default function AdminReports() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
+        <div className="bg-card rounded-3xl border border-border p-5">
           <div className="mb-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Gráfica semanal</p>
-            <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Actividad diaria (7 días)</h2>
+            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Gráfica semanal</p>
+            <h2 className="font-['Lora'] text-lg font-semibold text-foreground mt-1">Actividad diaria (7 días)</h2>
           </div>
           <div className="h-[280px]">
             {chartFormatted.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartFormatted} margin={{ top: 10, right: 20, left: -24, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(62,58,56,0.06)" />
-                  <XAxis dataKey="day" tick={{ fill: "#7A7270", fontSize: 10, fontFamily: "DM Mono" }} />
-                  <YAxis tick={{ fill: "#7A7270", fontSize: 10, fontFamily: "DM Mono" }} />
-                  <Tooltip contentStyle={{ background: "#fff", border: "1px solid rgba(62,58,56,0.1)", borderRadius: 10, fontSize: 11, fontFamily: "DM Mono" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="day" tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "DM Mono" }} />
+                  <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "DM Mono" }} />
+                  <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 11, fontFamily: "DM Mono" }} />
                   <Area type="monotone" dataKey="cantidad" name="Actividad" stroke={C.green.color} fill={C.green.color} fillOpacity={0.16} strokeWidth={2} dot={{ fill: C.green.color, r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-sm text-[#7A7270]">Sin datos disponibles</div>
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">Sin datos disponibles</div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
+        <div className="bg-card rounded-3xl border border-border p-5">
           <div className="mb-4">
-            <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270]">Comparativa</p>
-            <h2 className="font-['Lora'] text-lg font-semibold text-[#3E3A38] mt-1">Registrados vs Activos</h2>
+            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Comparativa</p>
+            <h2 className="font-['Lora'] text-lg font-semibold text-foreground mt-1">Registrados vs Activos</h2>
           </div>
           <div className="h-[280px]">
             {chartFormatted.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartFormatted} margin={{ top: 10, right: 20, left: -24, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(62,58,56,0.06)" />
-                  <XAxis dataKey="day" tick={{ fill: "#7A7270", fontSize: 10, fontFamily: "DM Mono" }} />
-                  <YAxis tick={{ fill: "#7A7270", fontSize: 10, fontFamily: "DM Mono" }} />
-                  <Tooltip contentStyle={{ background: "#fff", border: "1px solid rgba(62,58,56,0.1)", borderRadius: 10, fontSize: 11, fontFamily: "DM Mono" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis dataKey="day" tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "DM Mono" }} />
+                  <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10, fontFamily: "DM Mono" }} />
+                  <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 11, fontFamily: "DM Mono" }} />
                   <Bar dataKey="cantidad" name="Actividad" fill={C.green.color} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-sm text-[#7A7270]">Sin datos disponibles</div>
+              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">Sin datos disponibles</div>
             )}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Registrados</p>
+        <div className="bg-card rounded-3xl border border-border p-5">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-4">Registrados</p>
           <div className="space-y-4">
             {[
               { label: "Total", value: reportes?.registrados.total.toString() || "0" },
               { label: "Hoy", value: reportes?.registrados.hoy.toString() || "0" },
               { label: "Esta semana", value: reportes?.registrados.semanal.toString() || "0" },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-[#F7F5F4] p-4">
-                <p className="text-xs text-[#7A7270] uppercase tracking-wider font-mono">{item.label}</p>
-                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-[#3E3A38]">{item.value}</p>
+              <div key={item.label} className="rounded-2xl bg-background p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-mono">{item.label}</p>
+                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-foreground">{item.value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Planes activos</p>
+        <div className="bg-card rounded-3xl border border-border p-5">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-4">Planes activos</p>
           <div className="space-y-4">
             {[
               { label: "Total activos", value: reportes?.activos.total.toString() || "0" },
               { label: "Activos hoy", value: reportes?.activos.hoy.toString() || "0" },
               { label: "Activos (semana)", value: reportes?.activos.semanal.toString() || "0" },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-[#F7F5F4] p-4">
-                <p className="text-xs text-[#7A7270] uppercase tracking-wider font-mono">{item.label}</p>
-                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-[#3E3A38]">{item.value}</p>
+              <div key={item.label} className="rounded-2xl bg-background p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-mono">{item.label}</p>
+                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-foreground">{item.value}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-[rgba(62,58,56,0.09)] p-5">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-[#7A7270] mb-4">Resumen</p>
+        <div className="bg-card rounded-3xl border border-border p-5">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-4">Resumen</p>
           <div className="space-y-4">
             {[
               { label: "Total registrados", value: reportes?.registrados.total.toString() || "0" },
               { label: "Total activos", value: reportes?.activos.total.toString() || "0" },
               { label: "Tasa de actividad", value: reportes && reportes.registrados.total > 0 ? `${((reportes.activos.total / reportes.registrados.total) * 100).toFixed(1)}%` : "0%" },
             ].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-[#F7F5F4] p-4">
-                <p className="text-xs text-[#7A7270] uppercase tracking-wider font-mono">{item.label}</p>
-                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-[#3E3A38]">{item.value}</p>
+              <div key={item.label} className="rounded-2xl bg-background p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-mono">{item.label}</p>
+                <p className="mt-2 text-2xl font-['Lora'] font-semibold text-foreground">{item.value}</p>
               </div>
             ))}
           </div>

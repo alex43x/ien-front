@@ -59,10 +59,18 @@ export interface SetupTestResponse {
   competencias_a_mejorar: string[];
 }
 
+export interface PasoEjercicio {
+  id?: string;
+  texto?: string;
+  respuesta_tipo?: string;
+  min?: number;
+  max?: number;
+}
+
 export interface EjercicioDatos {
   nombre: string;
   instruccion: string;
-  pasos?: string[];
+  pasos?: PasoEjercicio[];
   tipo?: string;
   respuesta_tipo?: string;
   registro?: Record<string, any>;
@@ -120,6 +128,7 @@ export interface ResponderDiaResponse {
 
 export interface TodayPlanResponse {
   dia_actual: number;
+  completado?: boolean;
   cabecera: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;

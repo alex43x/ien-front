@@ -9,11 +9,10 @@ import {
   QrCode,
   UserPlus,
   LogOut,
-  Bell,
   Menu,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { C } from "../../constants/colors";
+import { ThemeToggle } from "../ui/ThemeToggle";
 
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
@@ -39,13 +38,13 @@ export default function AdminLayout() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-[#F7F5F4]" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="flex h-screen overflow-hidden">
-        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-[rgba(62,58,56,0.09)] transform transition-transform duration-200 lg:translate-x-0 lg:static lg:inset-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-card border-r border-border transform transition-transform duration-200 lg:translate-x-0 lg:static lg:inset-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 px-6 h-16 border-b border-[rgba(62,58,56,0.09)]">
+            <div className="flex items-center gap-3 px-6 h-16 border-b border-border">
               <img src="/imports/logo_ien-03.png" alt="IEN" className="h-8 w-auto" />
-              <span className="text-sm font-semibold text-[#3E3A38]">Admin</span>
+              <span className="text-sm font-semibold text-foreground">Admin</span>
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -56,23 +55,26 @@ export default function AdminLayout() {
                   <button
                     key={item.path}
                     onClick={() => { navigate(item.path); setSidebarOpen(false); }}
-                    className={`w-full flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${active ? "bg-[#E6F5F3] text-[#1E6860]" : "text-[#7A7270] hover:bg-[#F0EDEC] hover:text-[#3E3A38]"}`}
+                    className={`w-full flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${active ? "bg-accent/10 text-accent" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
                   >
-                    <Icon size={18} className={active ? "text-[#4DAAA0]" : ""} />
+                    <Icon size={18} className={active ? "text-accent" : ""} />
                     {item.label}
                   </button>
                 );
               })}
             </nav>
 
-            <div className="p-3 border-t border-[rgba(62,58,56,0.09)]">
-              <div className="rounded-xl bg-[#F7F5F4] p-3 mb-3">
-                <p className="text-xs font-medium text-[#3E3A38] truncate">{user?.nombre}</p>
-                <p className="text-[10px] text-[#7A7270] truncate">{user?.rol === 'admin_general' ? 'Admin General' : 'Admin de Negocio'}</p>
+            <div className="p-3 border-t border-border">
+              <div className="flex items-center justify-between rounded-xl bg-secondary p-3 mb-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-foreground truncate">{user?.nombre}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{user?.rol === 'admin_general' ? 'Admin General' : 'Admin de Negocio'}</p>
+                </div>
+                <ThemeToggle />
               </div>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all"
+                className="w-full flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
               >
                 <LogOut size={18} />
                 Cerrar sesión
@@ -86,25 +88,21 @@ export default function AdminLayout() {
         )}
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="bg-white border-b border-[rgba(62,58,56,0.09)] px-4 lg:px-6 h-16 flex items-center justify-between flex-shrink-0">
+          <header className="bg-card border-b border-border px-4 lg:px-6 h-16 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[#7A7270] hover:text-[#3E3A38]">
+              <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground">
                 <Menu size={20} />
               </button>
               <div>
-                <p className="text-sm font-semibold text-[#3E3A38]">Panel de administración</p>
-                <p className="text-xs text-[#7A7270]">Monitorea usuarios, respuestas y evaluaciones</p>
+                <p className="text-sm font-semibold text-foreground">Panel de administración</p>
+                <p className="text-xs text-muted-foreground">Monitorea usuarios, respuestas y evaluaciones</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-[#1E6860]" style={{ backgroundColor: C.green.bg, border: `1px solid ${C.green.border}` }}>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#4DAAA0]" /> Admin activo
+              <div className="hidden sm:flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-accent bg-accent/10 border border-accent/20">
+                <span className="w-2.5 h-2.5 rounded-full bg-accent" /> Admin activo
               </div>
-              <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-[#7A7270] hover:bg-[#F0EDEC] transition-all">
-                <Bell size={16} />
-                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#E96B6B]" />
-              </button>
-              <button onClick={handleLogout} title="Cerrar sesión" className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-[#7A7270] hover:bg-[#FAEAEA] hover:text-[#E96B6B] transition-all">
+              <button onClick={handleLogout} title="Cerrar sesión" className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all">
                 <LogOut size={14} />
                 <span className="hidden sm:inline">Salir</span>
               </button>
