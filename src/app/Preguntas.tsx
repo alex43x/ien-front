@@ -197,7 +197,7 @@ export default function Preguntas() {
               style={{ backgroundColor: tone.soft, color: tone.color }}>
               {current + 1}
             </div>
-            <p className="text-xs font-mono text-muted-foreground">Pregunta de Diagnóstico</p>
+            <p className="text-xs font-mono text-muted-foreground">Pregunta de Evaluación</p>
           </div>
 
           {/* Question */}
