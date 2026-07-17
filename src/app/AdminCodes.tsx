@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Power, PowerOff, QrCode, KeyRound } from "lucide-react";
 import { adminService } from "../services/admin.service";
 import type { CodigoActivacion, Sucursal, ProductoAdmin } from "../types/api.types";
+import CodeInput from "../components/CodeInput";
 
 export default function AdminCodes() {
   const [codes, setCodes] = useState<CodigoActivacion[]>([]);
@@ -98,13 +99,14 @@ export default function AdminCodes() {
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Código</label>
-                <input
-                  type="text"
-                  value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value })}
-                  className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground font-mono focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
-                  placeholder="Ej: IEN-ABCD-1234"
+                <CodeInput
+                  onChange={(v) => setForm({ ...form, codigo: v })}
                 />
+                <div className="mt-2 flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="font-mono font-bold">ABC</span> letras</span>
+                  <span className="text-border">-</span>
+                  <span className="flex items-center gap-1"><span className="font-mono font-bold">123</span> números</span>
+                </div>
               </div>
               <div>
                 <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Sucursal</label>
@@ -138,7 +140,7 @@ export default function AdminCodes() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!form.codigo || !form.tienda_id || !form.producto_id}
+                  disabled={!form.codigo || !form.tienda_id || !form.producto_id || !/^[A-Z]{3}-\d{3}$/.test(form.codigo)}
                   className="flex-1 rounded-2xl bg-foreground px-4 py-3 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                   Crear código

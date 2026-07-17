@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { ArrowRight, Scan, ChevronLeft, Loader2 } from "lucide-react";
-import { C } from "@/constants/colors";
 import { useAuth } from "../context/AuthContext";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import CodeInput from "../components/CodeInput";
 
 export default function Activar() {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ export default function Activar() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const canContinue = codigoActivacion.trim().length > 0 && (regData.nombre && regData.email && regData.password);
+  const canContinue = codigoActivacion.length === 7 && (regData.nombre && regData.email && regData.password);
 
   const handleSubmit = async () => {
     if (!canContinue || submitting) return;
@@ -25,7 +25,7 @@ export default function Activar() {
         nombre: regData.nombre,
         email: regData.email,
         password: regData.password,
-        codigo_activacion: codigoActivacion
+        codigo_activacion: codigoActivacion.toUpperCase()
       });
       navigate("/bienvenida");
     } catch (err: any) {
@@ -67,22 +67,22 @@ export default function Activar() {
 
           {/* Activation code */}
           <div className="bg-card rounded-2xl border border-border p-5 mb-5">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                 <Scan size={15} className="text-primary" />
               </div>
               <p className="text-sm font-semibold text-foreground">Código de activación</p>
             </div>
-            <input
-              type="text"
-              value={codigoActivacion}
-              onChange={(e) => { setCodigoActivacion(e.target.value); setError(""); }}
-              placeholder="IEN-002"
-              className="w-full text-center text-xl font-mono font-bold tracking-wider px-4 py-3 rounded-xl border-2 bg-secondary focus:outline-none transition-all"
-              style={{
-                borderColor: error ? C.red.color : undefined,
-              }}
+            <CodeInput
+              onChange={(v) => { setCodigoActivacion(v); setError(""); }}
+              disabled={submitting}
+              error={!!error}
             />
+            <div className="mt-4 flex items-center justify-center gap-6 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="font-mono font-bold">ABC</span> letras</span>
+              <span className="text-border">-</span>
+              <span className="flex items-center gap-1"><span className="font-mono font-bold">123</span> números</span>
+            </div>
           </div>
 
           {/* Continue */}
@@ -100,11 +100,6 @@ export default function Activar() {
               </>
             )}
           </button>
-          {!canContinue && (
-            <p className="text-center text-xs font-mono text-muted-foreground mt-2">
-              Ingresa un código de activación para continuar
-            </p>
-          )}
           {error && (
             <p className="text-center text-xs font-medium text-destructive mt-2">
               {error}
