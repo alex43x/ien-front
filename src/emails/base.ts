@@ -20,8 +20,6 @@ const FONT = {
   mono: "'DM Mono', 'Courier New', monospace",
 };
 
-const LOGO_SVG = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMzYiIHZpZXdCb3g9IjAgMCAxMjAgMzYiPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMzYiIGZpbGw9Im5vbmUiLz48dGV4dCB4PSIwIiB5PSIyOCIgZm9udC1mYW1pbHk9IkhlbHZldGljYSBOZXVlLEhlbHZldGljYSxBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjM0UzQTM4IiBsZXR0ZXItc3BhY2luZz0iMiI+SUVOPC90ZXh0PjxjaXJjbGUgY3g9IjEwNSIgY3k9IjEwIiByPSI1IiBmaWxsPSIjRjBCQzQ4Ii8+PC9zdmc+";
-
 export function wrap(body: string) {
   return `<!DOCTYPE html>
 <html lang="es">
@@ -50,16 +48,7 @@ export function header() {
   return `
   <tr>
     <td style="padding:24px 32px;background:${C.white};border-radius:16px 16px 0 0;border-bottom:1px solid ${C.border};">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td>
-            <img src="${LOGO_SVG}" alt="IEN" width="80" style="height:auto;" />
-          </td>
-          <td align="right" style="vertical-align:middle;">
-            <span style="font-family:${FONT.mono};font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${C.muted};font-weight:500;">IEN</span>
-          </td>
-        </tr>
-      </table>
+      <p style="margin:0;font-family:${FONT.mono};font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${C.muted};font-weight:500;">IEN — Inteligencia Emocional</p>
     </td>
   </tr>`;
 }
