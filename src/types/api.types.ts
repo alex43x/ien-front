@@ -254,6 +254,49 @@ export interface CreateAdminNegocioResponse {
   tiendas_administradas: string[];
 }
 
+export interface AdminNegocioItem {
+  _id: string;
+  nombre: string;
+  email: string;
+  tiendas_administradas: TiendaDocument[];
+  fecha_registro: string;
+}
+
+export interface UpdateAdminNegocioRequest {
+  nombre?: string;
+  email?: string;
+  tiendas_administradas?: string[];
+}
+
+export interface CreateModeradorRequest {
+  nombre: string;
+  email: string;
+  password: string;
+  tienda_id: string;
+}
+
+export interface CreateModeradorResponse {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
+  tienda_moderada: string;
+}
+
+export interface ModeradorTiendaItem {
+  _id: string;
+  nombre: string;
+  email: string;
+  tienda_moderada: TiendaDocument;
+  fecha_registro: string;
+}
+
+export interface UpdateModeradorRequest {
+  nombre?: string;
+  email?: string;
+  tienda_id?: string;
+}
+
 export interface CodigoResponse {
   mensaje: string;
   codigo?: CodigoActivacion;

@@ -13,6 +13,12 @@ import {
   CodigoActivacion,
   CreateAdminNegocioRequest,
   CreateAdminNegocioResponse,
+  AdminNegocioItem,
+  UpdateAdminNegocioRequest,
+  CreateModeradorRequest,
+  CreateModeradorResponse,
+  ModeradorTiendaItem,
+  UpdateModeradorRequest,
   CodigoResponse,
 } from '../types/api.types';
 
@@ -59,6 +65,51 @@ export const adminService = {
 
   crearAdminNegocio: async (data: CreateAdminNegocioRequest) => {
     const response = await api.post<CreateAdminNegocioResponse>('/admin/usuarios/admin-negocio', data);
+    return response.data;
+  },
+
+  listarAdminsNegocio: async () => {
+    const response = await api.get<AdminNegocioItem[]>('/admin/usuarios/admin-negocio');
+    return response.data;
+  },
+
+  getAdminNegocio: async (id: string) => {
+    const response = await api.get<AdminNegocioItem>(`/admin/usuarios/admin-negocio/${id}`);
+    return response.data;
+  },
+
+  actualizarAdminNegocio: async (id: string, data: UpdateAdminNegocioRequest) => {
+    const response = await api.put<AdminNegocioItem>(`/admin/usuarios/admin-negocio/${id}`, data);
+    return response.data;
+  },
+
+  eliminarAdminNegocio: async (id: string) => {
+    const response = await api.delete<{ mensaje: string }>(`/admin/usuarios/admin-negocio/${id}`);
+    return response.data;
+  },
+
+  listarModeradores: async () => {
+    const response = await api.get<ModeradorTiendaItem[]>('/admin/usuarios/moderador-tienda');
+    return response.data;
+  },
+
+  crearModerador: async (data: CreateModeradorRequest) => {
+    const response = await api.post<CreateModeradorResponse>('/admin/usuarios/moderador-tienda', data);
+    return response.data;
+  },
+
+  getModerador: async (id: string) => {
+    const response = await api.get<ModeradorTiendaItem>(`/admin/usuarios/moderador-tienda/${id}`);
+    return response.data;
+  },
+
+  actualizarModerador: async (id: string, data: UpdateModeradorRequest) => {
+    const response = await api.put<ModeradorTiendaItem>(`/admin/usuarios/moderador-tienda/${id}`, data);
+    return response.data;
+  },
+
+  eliminarModerador: async (id: string) => {
+    const response = await api.delete<{ mensaje: string }>(`/admin/usuarios/moderador-tienda/${id}`);
     return response.data;
   },
 

@@ -14,14 +14,14 @@ export default function AdminCodes() {
 
   const fetchData = async () => {
     try {
-      const [c, s, p] = await Promise.all([
+      const [c, s, p] = await Promise.allSettled([
         adminService.listarCodigos(),
         adminService.listarSucursales(),
         adminService.listarProductos(),
       ]);
-      setCodes(c);
-      setStores(s);
-      setProducts(p);
+      setCodes(c.status === "fulfilled" ? c.value : []);
+      setStores(s.status === "fulfilled" ? s.value : []);
+      setProducts(p.status === "fulfilled" ? p.value : []);
     } catch (err) {
       console.error("Error fetching codes", err);
     } finally {

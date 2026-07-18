@@ -8,7 +8,7 @@ import {
   Package,
   QrCode,
   Mail,
-  UserPlus,
+  Shield,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -16,14 +16,14 @@ import { useAuth } from "../../context/AuthContext";
 import { ThemeToggle } from "../ui/ThemeToggle";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Pacientes", path: "/admin/pacientes", icon: Users },
-  { label: "Reportes", path: "/admin/reportes", icon: BarChart3 },
-  { label: "Sucursales", path: "/admin/sucursales", icon: Store },
-  { label: "Productos", path: "/admin/productos", icon: Package },
-  { label: "Códigos", path: "/admin/codigos", icon: QrCode },
-  { label: "Plantillas", path: "/admin/plantillas", icon: Mail },
-  { label: "Crear Admin", path: "/admin/crear-admin", icon: UserPlus },
+  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard, roles: ['admin_general', 'admin_negocio'] as string[] },
+  { label: "Pacientes", path: "/admin/pacientes", icon: Users, roles: ['admin_general', 'admin_negocio'] as string[] },
+  { label: "Reportes", path: "/admin/reportes", icon: BarChart3, roles: ['admin_general', 'admin_negocio'] as string[] },
+  { label: "Sucursales", path: "/admin/sucursales", icon: Store, roles: ['admin_general'] as string[] },
+  { label: "Productos", path: "/admin/productos", icon: Package, roles: ['admin_general', 'admin_negocio', 'moderador_tienda'] as string[] },
+  { label: "Códigos", path: "/admin/codigos", icon: QrCode, roles: ['admin_general', 'admin_negocio', 'moderador_tienda'] as string[] },
+  { label: "Plantillas", path: "/admin/plantillas", icon: Mail, roles: ['admin_general'] as string[] },
+  { label: "Usuarios", path: "/admin/usuarios", icon: Shield, roles: ['admin_general', 'admin_negocio'] as string[] },
 ];
 
 export default function AdminLayout() {
@@ -50,7 +50,7 @@ export default function AdminLayout() {
             </div>
 
             <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-              {NAV_ITEMS.map((item) => {
+              {NAV_ITEMS.filter((item) => item.roles.includes(user?.rol || "")).map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
                 return (
@@ -70,7 +70,9 @@ export default function AdminLayout() {
               <div className="flex items-center justify-between rounded-xl bg-secondary p-3 mb-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-foreground truncate">{user?.nombre}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{user?.rol === 'admin_general' ? 'Admin General' : 'Admin de Negocio'}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {user?.rol === 'admin_general' ? 'Admin General' : user?.rol === 'admin_negocio' ? 'Admin de Negocio' : 'Moderador de Tienda'}
+                  </p>
                 </div>
                 <ThemeToggle />
               </div>

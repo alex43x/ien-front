@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
 import Dashboard from "./Dashboard";
 import AdminDashboard from "./AdminDashboard";
 import AdminPatients from "./AdminPatients";
@@ -8,7 +9,7 @@ import AdminStores from "./AdminStores";
 import AdminProducts from "./AdminProducts";
 import AdminCodes from "./AdminCodes";
 import AdminEmails from "./AdminEmails";
-import AdminCreateBusinessAdmin from "./AdminCreateBusinessAdmin";
+import AdminUsuarios from "./AdminUsuarios";
 import Login from "./Login";
 import Register from "./Register";
 import Bienvenida from "./Bienvenida";
@@ -21,6 +22,12 @@ import AdminRoute from "../components/AdminRoute";
 import AdminLayout from "../components/layout/AdminLayout";
 import PatientLayout from "../components/layout/PatientLayout";
 import PublicRoute from "../components/PublicRoute";
+
+function AdminIndex() {
+  const { user } = useAuth();
+  const target = user?.rol === "moderador_tienda" ? "/admin/productos" : "/admin/dashboard";
+  return <Navigate to={target} replace />;
+}
 
 export const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
@@ -59,7 +66,7 @@ export const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
-          { path: "/admin", element: <Navigate to="/admin/dashboard" replace /> },
+          { path: "/admin", element: <AdminIndex /> },
           { path: "/admin/dashboard", element: <AdminDashboard /> },
           { path: "/admin/pacientes", element: <AdminPatients /> },
           { path: "/admin/pacientes/:id", element: <AdminPatientDetail /> },
@@ -68,7 +75,7 @@ export const router = createBrowserRouter([
           { path: "/admin/productos", element: <AdminProducts /> },
           { path: "/admin/codigos", element: <AdminCodes /> },
           { path: "/admin/plantillas", element: <AdminEmails /> },
-          { path: "/admin/crear-admin", element: <AdminCreateBusinessAdmin /> },
+          { path: "/admin/usuarios", element: <AdminUsuarios /> },
         ],
       },
     ],

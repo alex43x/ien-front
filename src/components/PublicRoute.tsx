@@ -13,7 +13,7 @@ export default function PublicRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to={isAdmin ? "/admin/dashboard" : "/dashboard"} replace />;
+    return <Navigate to={isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 
   return <Outlet />;

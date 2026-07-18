@@ -13,12 +13,12 @@ export default function AdminProducts() {
 
   const fetchData = async () => {
     try {
-      const [p, s] = await Promise.all([
+      const [p, s] = await Promise.allSettled([
         adminService.listarProductos(),
         adminService.listarSucursales(),
       ]);
-      setProducts(p);
-      setStores(s);
+      setProducts(p.status === "fulfilled" ? p.value : []);
+      setStores(s.status === "fulfilled" ? s.value : []);
     } catch (err) {
       console.error("Error fetching products", err);
     } finally {
