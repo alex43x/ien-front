@@ -53,6 +53,37 @@
 - `isAuthenticated && !isAdmin` → redirect a `/dashboard`
 - No autenticado → renderiza `<Outlet />`
 
+## Componentes de formulario
+
+### CodeInput ([`src/components/CodeInput.tsx`](../src/components/CodeInput.tsx))
+
+Input guiado para códigos de activación con formato XXX-000 (3 letras + 3 dígitos).
+
+```typescript
+interface CodeInputProps {
+  onChange: (code: string) => void;
+}
+```
+
+**Comportamiento:**
+- 6 inputs separados: 3 para letras, 3 para números
+- Auto-advance al completar cada input
+- Backspace borra el input anterior
+- Soporte para pegar código completo (ej. `ABC-123`)
+- Convierte letras a mayúsculas automáticamente
+- Emite el código completo via `onChange` (ej. `"ABC-123"`)
+
+**Uso:**
+```tsx
+import CodeInput from "../components/CodeInput";
+
+<CodeInput onChange={(v) => setForm({ ...form, codigo: v })} />
+```
+
+Se usa en:
+- `AdminCodes.tsx` — crear nuevo código de activación
+- `Activar.tsx` — activación de cuenta por el usuario
+
 ## Layouts
 
 ### AdminLayout ([`src/components/layout/AdminLayout.tsx`](../src/components/layout/AdminLayout.tsx))

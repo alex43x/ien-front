@@ -23,7 +23,7 @@ AuthProvider (contexto)
         │           └── /dashboard
         └── AdminRoute (admin_general | admin_negocio)
               └── AdminLayout (sidebar)
-                    ├── /admin → /admin/dashboard
+                    ├── /admin → redirige según rol (admin_general → /admin/dashboard, moderador → /admin/productos)
                     ├── /admin/dashboard
                     ├── /admin/pacientes
                     ├── /admin/pacientes/:id
@@ -31,7 +31,8 @@ AuthProvider (contexto)
                     ├── /admin/sucursales
                     ├── /admin/productos
                     ├── /admin/codigos
-                    └── /admin/crear-admin
+                    ├── /admin/plantillas
+                    └── /admin/usuarios
 ```
 
 ## Flujo de navegación

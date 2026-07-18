@@ -14,7 +14,8 @@ El layout envuelve todas las rutas admin con:
 │  Sucursales   │       (página activa)       │
 │  Productos    │                             │
 │  Códigos      │                             │
-│  Crear Admin  │                             │
+│  Plantillas   │                             │
+│  Usuarios     │                             │
 │               │                             │
 │  [Usuario]    │                             │
 │  Cerrar sesión│                             │
@@ -24,6 +25,8 @@ El layout envuelve todas las rutas admin con:
 - Sidebar colapsable en mobile con overlay
 - Header con indicador "Admin activo" y botón de cerrar sesión
 - El `Outlet` renderiza la página según la ruta activa
+- Cada item tiene `roles: string[]` para visibilidad por rol
+- `/admin` redirige según rol: `admin_general` → `/admin/dashboard`, `moderador_tienda` → `/admin/productos`
 
 ## Páginas
 
@@ -90,10 +93,39 @@ Muestra:
 
 **Ruta:** `/admin/codigos`
 
-- Tabla con código, sucursal, producto, fecha, estado
-- Botón Activar/Desactivar por fila
-- Modal para crear nuevo código
+- Layout de tarjetas (card grid) con código, sucursal, producto, fecha, estado
+- Botón Activar/Desactivar por tarjeta
+- Modal para crear nuevo código con `CodeInput` (formato XXX-000) y selector de sucursal + producto
 - Indicador visual: verde = activo, rojo = inactivo
+- Los códigos son reutilizables (múltiples usuarios pueden activarse con el mismo)
+
+### AdminEmails ([`src/app/AdminEmails.tsx`](../src/app/AdminEmails.tsx))
+
+**Ruta:** `/admin/plantillas`
+
+- Solo accesible para `admin_general`
+- Sidebar con 10 plantillas de correo transaccionales
+- Preview en iframe con diseño responsive
+- Input para modificar nombre de prueba (default: "María García")
+- Navegación entre plantillas con flechas
+
+Plantillas disponibles:
+- Bienvenida (día 0)
+- Hitos semanales (semanas 1-4: días 7, 14, 21, 28)
+- Recordatorio diario
+- Racha rota
+- Urgencia de activación
+- Recuperación por inactividad
+- Recuperación de contraseña
+
+### AdminUsuarios ([`src/app/AdminUsuarios.tsx`](../src/app/AdminUsuarios.tsx))
+
+**Ruta:** `/admin/usuarios`
+
+- CRUD de admins de negocio y moderadores de tienda
+- Tabs para alternar entre ambos roles
+- Modal para crear/editar con selector de sucursales
+- Solo accesible para `admin_general`
 
 ### AdminCreateBusinessAdmin ([`src/app/AdminCreateBusinessAdmin.tsx`](../src/app/AdminCreateBusinessAdmin.tsx))
 

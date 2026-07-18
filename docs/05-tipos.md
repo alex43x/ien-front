@@ -169,7 +169,25 @@ interface CodigoActivacion {
   fecha_creacion: string;
   fecha_activacion?: string;
 }
+
+interface CodigoResponse {
+  mensaje: string;
+}
 ```
+
+### PasoEjercicio
+
+```typescript
+interface PasoEjercicio {
+  id?: string;
+  texto?: string;
+  respuesta_tipo?: string;
+  min?: number;
+  max?: number;
+}
+```
+
+Usado en `EjercicioDatos.pasos` para definir los pasos de un ejercicio dentro de una lección.
 
 ### Admin de negocio
 

@@ -48,10 +48,11 @@ App inicia
 Se llama desde la página `Activar.tsx` (no desde `Register.tsx`).
 
 1. `Register.tsx` recoge nombre/email/password y navega a `/activar` con los datos en `location.state`
-2. `Activar.tsx` recibe los datos + usuario ingresa `codigo_activacion` (formato IEN-002)
-3. Al presionar "Comenzar el programa" → llama `register({ nombre, email, password, codigo_activacion })`
-4. El servicio guarda tokens y usuario en localStorage y actualiza el estado
-5. Navega a `/bienvenida`
+2. `Activar.tsx` recibe los datos + usuario ingresa `codigo_activacion` (formato XXX-000: 3 letras + guión + 3 dígitos, ej. `ABC-123`)
+3. Los códigos son **reutilizables**: múltiples usuarios pueden activarse con el mismo código
+4. Al presionar "Comenzar el programa" → llama `register({ nombre, email, password, codigo_activacion })`
+5. El servicio guarda tokens y usuario en localStorage y actualiza el estado
+6. Navega a `/bienvenida`
 
 ### logout()
 

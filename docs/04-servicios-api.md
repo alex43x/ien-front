@@ -26,6 +26,8 @@ Endpoints de `/auth/*`.
 | `refresh()` | Refrescar access token | POST `/auth/refresh` |
 | `logout()` | Cerrar sesión | POST `/auth/logout` |
 | `getProfile()` | Obtener perfil completo | GET `/auth/profile` |
+| `forgotPassword(email)` | Solicitar recuperación de contraseña | POST `/auth/forgot-password` |
+| `resetPassword(data)` | Restablecer contraseña con token | POST `/auth/reset-password` |
 
 login/register guardan automáticamente los tokens y usuario en localStorage.
 
@@ -81,6 +83,20 @@ Endpoints de `/admin/*`. Todos requieren JWT + rol admin.
 | Método | Endpoint |
 |--------|----------|
 | `crearAdminNegocio(data)` | POST `/admin/usuarios/admin-negocio` |
+| `listarAdminsNegocio()` | GET `/admin/usuarios/admin-negocio` |
+| `getAdminNegocio(id)` | GET `/admin/usuarios/admin-negocio/:id` |
+| `actualizarAdminNegocio(id, data)` | PUT `/admin/usuarios/admin-negocio/:id` |
+| `eliminarAdminNegocio(id)` | DELETE `/admin/usuarios/admin-negocio/:id` |
+
+### Moderadores de tienda
+
+| Método | Endpoint |
+|--------|----------|
+| `listarModeradores()` | GET `/admin/usuarios/moderador-tienda` |
+| `crearModerador(data)` | POST `/admin/usuarios/moderador-tienda` |
+| `getModerador(id)` | GET `/admin/usuarios/moderador-tienda/:id` |
+| `actualizarModerador(id, data)` | PUT `/admin/usuarios/moderador-tienda/:id` |
+| `eliminarModerador(id)` | DELETE `/admin/usuarios/moderador-tienda/:id` |
 
 ## plan.service.ts ([`src/services/plan.service.ts`](../src/services/plan.service.ts))
 
@@ -99,10 +115,12 @@ Endpoints de `/plan/*`. Requieren JWT.
 
 Endpoints internos con API key.
 
-| Método | Descripción |
-|--------|-------------|
-| `resetStreaks(apiKey)` | Resetear rachas de usuarios inactivos |
-| `sendReminders(apiKey, data)` | Enviar correos de recordatorio |
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `resetStreaks(apiKey)` | POST `/jobs/reset-streaks` | Resetear rachas de usuarios inactivos |
+| `sendReminders(apiKey)` | POST `/jobs/send-reminders` | Enviar correos de recordatorio diario |
+| `sendActivationNudge(apiKey)` | POST `/jobs/send-activation-nudge` | Enviar urgencia de activación |
+| `sendRecovery(apiKey)` | POST `/jobs/send-recovery` | Enviar recuperación por inactividad |
 
 ## Referencias
 
