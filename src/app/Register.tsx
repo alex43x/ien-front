@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound } from "lucide-react";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -10,60 +11,47 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (!name || !email || !password || !confirmPassword) {
       setError("Completa todos los campos.");
-      setSuccess("");
       return;
     }
 
     if (password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
-      setSuccess("");
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
-      setSuccess("");
       return;
     }
 
-    setError("");
-    setSuccess("");
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess("Cuenta creada. Te llevamos al siguiente paso.");
-      setTimeout(() => {
-        navigate("/activar");
-        setTimeout(() => navigate("/bienvenida"), 800);
-      }, 900);
-    }, 900);
+    navigate("/activar", { state: { nombre: name, email, password } });
   };
 
   return (
     <div
-      className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(217,160,48,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(77,170,160,0.16),_transparent_22%),#F7F5F4] p-4 sm:p-6 lg:p-8"
+      className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(217,160,48,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(77,170,160,0.16),_transparent_22%),var(--background)] p-4 sm:p-6 lg:p-8"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-hidden rounded-[32px] border border-[#E8E2DB] bg-white/80 shadow-[0_24px_80px_rgba(62,58,56,0.14)] backdrop-blur-xl">
-        <div className="relative hidden flex-1 overflow-hidden bg-[#3E3A38] p-10 lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.14),_transparent_35%),linear-gradient(135deg,_#3E3A38_0%,_#524E4C_100%)]" />
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl overflow-hidden rounded-[32px] border border-border bg-card/80 shadow-[0_24px_80px_rgba(62,58,56,0.14)] backdrop-blur-xl">
+        <div className="relative hidden flex-1 overflow-hidden bg-sidebar p-10 lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.14),_transparent_35%)]" />
           <div className="absolute inset-0">
             <div className="absolute -left-16 top-[-72px] h-[280px] w-[280px] rounded-full border border-white/10" />
             <div className="absolute bottom-[-92px] right-[-80px] h-[320px] w-[320px] rounded-full border border-white/10" />
           </div>
 
           <div className="relative z-10">
-            <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
+            <img src="/imports/logo_ien-03.png" alt="IEN" className="h-14 w-auto opacity-90 brightness-0 invert" />
           </div>
 
           <div className="relative z-10 max-w-xl">
@@ -92,72 +80,72 @@ export default function Register() {
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-center bg-[#FCFAF8] p-6 sm:p-8 lg:p-10">
+        <div className="flex flex-1 items-center justify-center bg-secondary/50 p-6 sm:p-8 lg:p-10">
           <div className="w-full max-w-md">
             <div className="mb-8 lg:hidden">
-              <img src="/src/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
+              <img src="/imports/logo_ien-03.png" alt="IEN" className="h-12 w-auto" />
             </div>
 
             <div className="mb-8">
-              <div className="mb-4 inline-flex items-center rounded-full border border-[#E7DDCF] bg-[#FEF7E0] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#D9A030]">
+              <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
                 Registro
               </div>
-              <h1 className="font-['Lora'] text-3xl font-semibold text-[#3E3A38]">Crea tu cuenta</h1>
-              <p className="mt-2 text-sm leading-6 text-[#7A7270]">
+              <h1 className="font-['Lora'] text-3xl font-semibold text-foreground">Crea tu cuenta</h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Completa tus datos para comenzar tu recorrido con confianza.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                   Nombre completo
                 </label>
                 <div className="relative">
-                  <UserRound size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
+                  <UserRound size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="María Pérez"
-                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-4 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
+                    className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground/50 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                   Correo electrónico
                 </label>
                 <div className="relative">
-                  <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
+                  <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="maria@ejemplo.com"
-                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-4 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
+                    className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground/50 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                   Contraseña
                 </label>
                 <div className="relative">
-                  <Lock size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
+                  <Lock size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 8 caracteres"
-                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-12 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
+                    className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-12 text-sm text-foreground placeholder-muted-foreground/50 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A7270] transition hover:text-[#3E3A38]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -165,22 +153,22 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#3E3A38]">
+                <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                   Confirmar contraseña
                 </label>
                 <div className="relative">
-                  <Lock size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#B6AFA9]" />
+                  <Lock size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repite tu contraseña"
-                    className="w-full rounded-2xl border border-[#E0DAD4] bg-white py-3 pl-10 pr-12 text-sm text-[#3E3A38] placeholder-[#C0BCBA] shadow-sm transition-all focus:border-[#D9A030] focus:outline-none focus:ring-4 focus:ring-[#D9A030]/15"
+                    className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-12 text-sm text-foreground placeholder-muted-foreground/50 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A7270] transition hover:text-[#3E3A38]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -188,37 +176,24 @@ export default function Register() {
               </div>
 
               {error && (
-                <p className="rounded-2xl bg-[#FAEAEA] px-3 py-2 text-xs font-medium text-[#E96B6B]">
+                <p className="rounded-2xl bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
                   {error}
-                </p>
-              )}
-
-              {success && (
-                <p className="rounded-2xl bg-[#E6F5F3] px-3 py-2 text-xs font-medium text-[#4DAAA0]">
-                  {success}
                 </p>
               )}
 
               <button
                 type="submit"
-                disabled={loading}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#3E3A38] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#3E3A38]/15 transition-all hover:-translate-y-0.5 hover:bg-[#2F2B29] disabled:cursor-not-allowed disabled:opacity-70"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-foreground px-4 py-3 text-sm font-semibold text-background shadow-lg transition-all hover:-translate-y-0.5 hover:opacity-90"
               >
-                {loading ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                ) : (
-                  <>
-                    Crear cuenta
-                    <ArrowRight size={15} />
-                  </>
-                )}
+                Crear cuenta
+                <ArrowRight size={15} />
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-[#7A7270]">
+              <p className="text-sm text-muted-foreground">
                 ¿Ya tienes cuenta?{' '}
-                <button type="button" onClick={() => navigate("/login")} className="font-semibold text-[#D9A030] transition hover:underline">
+                <button type="button" onClick={() => navigate("/login")} className="font-semibold text-primary transition hover:underline">
                   Inicia sesión
                 </button>
               </p>
