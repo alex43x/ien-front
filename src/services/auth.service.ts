@@ -64,5 +64,25 @@ export const authService = {
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('usuario');
     }
-  }
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post<{ mensaje: string }>('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  verifyResetToken: async (token: string) => {
+    const response = await api.get<{ valido: boolean; email?: string }>('/auth/verify-reset-token', { params: { token } });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, nueva_password: string) => {
+    const response = await api.post<{ mensaje: string }>('/auth/reset-password', { token, nueva_password });
+    return response.data;
+  },
+
+  changePassword: async (current_password: string, nueva_password: string) => {
+    const response = await api.post<{ mensaje: string }>('/auth/change-password', { current_password, nueva_password });
+    return response.data;
+  },
 };

@@ -21,6 +21,9 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import AdminRoute from "../components/AdminRoute";
 import AdminLayout from "../components/layout/AdminLayout";
 import PatientLayout from "../components/layout/PatientLayout";
+import Cuenta from "./Cuenta";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 import PublicRoute from "../components/PublicRoute";
 
 function AdminIndex() {
@@ -36,6 +39,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/forgot-password", element: <ForgotPassword /> },
+      { path: "/reset-password", element: <ResetPassword /> },
     ],
   },
   { path: "/activar", element: <Activar /> },
@@ -56,6 +61,7 @@ export const router = createBrowserRouter([
         element: <PatientLayout />,
         children: [
           { path: "/dashboard", element: <Dashboard /> },
+          { path: "/cuenta", element: <Cuenta /> },
         ],
       },
     ],

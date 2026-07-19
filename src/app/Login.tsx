@@ -118,7 +118,7 @@ export default function Login() {
                   <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">
                     Contraseña
                   </label>
-                  <button type="button" className="text-xs font-medium text-primary transition hover:opacity-80">
+                  <button type="button" onClick={() => navigate("/forgot-password")} className="text-xs font-medium text-primary transition hover:opacity-80">
                     ¿La olvidaste?
                   </button>
                 </div>

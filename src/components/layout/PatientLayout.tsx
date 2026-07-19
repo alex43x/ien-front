@@ -72,7 +72,7 @@ export default function PatientLayout() {
                 </div>
                 <div className="p-2">
                   <button
-                    onClick={() => { setProfileOpen(false); }}
+                    onClick={() => { setProfileOpen(false); navigate("/cuenta"); }}
                     className="w-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
                   >
                     <Settings size={15} />
