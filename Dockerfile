@@ -17,11 +17,16 @@ RUN npm run build
 # ─── Stage 2: Servir con Nginx (imagen mínima) ───────────────────────────────
 FROM nginx:alpine
 
+# Backend hostname para el proxy (default para docker-compose local)
+ARG BACKEND_HOST=backend
+ENV BACKEND_HOST=$BACKEND_HOST
+
 # Copia el build estático
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copia la configuración de Nginx (proxy + SPA fallback)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copia y reemplaza placeholder en la config de Nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+RUN envsubst '${BACKEND_HOST}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
