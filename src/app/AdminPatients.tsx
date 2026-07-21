@@ -30,10 +30,11 @@ export default function AdminPatients() {
 
   const totalPages = data ? Math.ceil(data.total / limit) : 1;
 
-  const statusColor = (estado: string) => {
-    if (estado === "activo") return { bg: C.green.bg, text: C.green.text, label: "Activo" };
-    if (estado === "completado") return { bg: C.yellow.bg, text: C.yellow.text, label: "Completado" };
-    if (estado === "abandonado") return { bg: C.red.bg, text: C.red.text, label: "Abandonado" };
+  const statusColor = (plan: { estado: string; en_riesgo?: boolean } | null) => {
+    if (plan?.estado === "activo" && plan.en_riesgo) return { bg: C.red.bg, text: C.red.text, label: "En riesgo" };
+    if (plan?.estado === "activo") return { bg: C.green.bg, text: C.green.text, label: "Activo" };
+    if (plan?.estado === "completado") return { bg: C.yellow.bg, text: C.yellow.text, label: "Completado" };
+    if (plan?.estado === "abandonado") return { bg: C.red.bg, text: C.red.text, label: "Abandonado" };
     return { bg: C.red.bg, text: C.red.text, label: "Sin plan" };
   };
 
@@ -89,7 +90,7 @@ export default function AdminPatients() {
             </thead>
             <tbody className="divide-y divide-border">
               {filtered?.map((p) => {
-                const sc = p.plan ? statusColor(p.plan.estado) : statusColor("");
+                const sc = statusColor(p.plan);
                 return (
                   <tr
                     key={p.id}
