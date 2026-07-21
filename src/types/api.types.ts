@@ -162,10 +162,8 @@ export interface AdminMetrics {
   total_activaciones: number;
   usuarios_activos: number;
   completados: number;
-  abandonados: number;
   promedio_dia_progreso: number;
   racha_promedio: number;
-  racha_maxima_promedio: number;
   usuarios_en_riesgo: number;
 }
 
