@@ -9,7 +9,7 @@ export const urgenciaActivacion = (nombre: string) => wrap(`
     ${para(`Te registraste pero todavía no activaste tu programa. Todavía podés hacerlo — y los primeros 7 días son clave.`)}
     ${para(`Quienes empiezan en los primeros 7 días tienen <strong>3x más probabilidad</strong> de completar la transformación.`)}
     ${para(`Tu código de activación te espera. Es un momento de 5 minutos que puede cambiar tu próximo mes.`)}
-    ${btn("Activar mi programa", "https://ien.app/activar", C.gold)}
+      ${btn("Activar mi programa", "https://ien.app/dashboard", C.gold)}
   `, C.gold)}
   ${spacer()}
   ${footer()}
