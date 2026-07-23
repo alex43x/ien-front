@@ -215,8 +215,7 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
-      {import.meta.env.DEV && (
-        <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2">
           <button
             onClick={async () => {
               try {
@@ -258,7 +257,6 @@ export default function Dashboard() {
             DEV: AVANZAR DÍA
           </button>
         </div>
-      )}
 
       {/* ── Estado del plan ── */}
       {profile && !planLoading && (
