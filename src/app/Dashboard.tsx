@@ -216,47 +216,47 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
       <div className="flex justify-end gap-2">
-          <button
-            onClick={async () => {
-              try {
-                await planService.autocompleteTest();
-                const [todayPlan, profileData] = await Promise.all([
-                  planService.getTodayPlan(),
-                  planService.getProfile()
-                ]);
-                setLeccion(todayPlan.leccion);
-                setProfile(profileData);
-                setHitoAlcanzado(null);
-              } catch (error) {
-                console.error("Error auto-completing test:", error);
-              }
-            }}
-            title="Auto-completar test inicial (DEV)"
-            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
-          >
-            DEV: AUTO TEST
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                await planService.advanceDay();
-                const [todayPlan, profileData] = await Promise.all([
-                  planService.getTodayPlan(),
-                  planService.getProfile()
-                ]);
-                setLeccion(todayPlan.leccion);
-                setProfile(profileData);
-                setHitoAlcanzado(null);
-              } catch (error) {
-                console.error("Error advancing day:", error);
-              }
-            }}
-            title="Avanzar día (DEV)"
-            className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
-          >
-            DEV: AVANZAR DÍA
-          </button>
-        </div>
+        <button
+          onClick={async () => {
+            try {
+              await planService.autocompleteTest();
+              const [todayPlan, profileData] = await Promise.all([
+                planService.getTodayPlan(),
+                planService.getProfile()
+              ]);
+              setLeccion(todayPlan.leccion);
+              setProfile(profileData);
+              setHitoAlcanzado(null);
+            } catch (error) {
+              console.error("Error auto-completing test:", error);
+            }
+          }}
+          title="Auto-completar test inicial"
+          className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
+        >
+          AUTO TEST
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              await planService.advanceDay();
+              const [todayPlan, profileData] = await Promise.all([
+                planService.getTodayPlan(),
+                planService.getProfile()
+              ]);
+              setLeccion(todayPlan.leccion);
+              setProfile(profileData);
+              setHitoAlcanzado(null);
+            } catch (error) {
+              console.error("Error advancing day:", error);
+            }
+          }}
+          title="Avanzar día"
+          className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
+        >
+          AVANZAR DÍA
+        </button>
+      </div>
 
       {/* ── Estado del plan ── */}
       {profile && !planLoading && (
