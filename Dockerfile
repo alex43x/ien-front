@@ -17,8 +17,10 @@ RUN npm run build
 # ─── Stage 2: Servir con Nginx (imagen mínima) ───────────────────────────────
 FROM nginx:alpine
 
-# Backend hostname para el proxy (default para docker-compose local)
-ARG BACKEND_HOST=backend
+# Backend hostname para el proxy.
+# Local (docker-compose): http://backend:3000
+# Producción (Railway/Northflank): URL pública completa, ej. https://xxx.code.run
+ARG BACKEND_HOST=http://backend:3000
 ENV BACKEND_HOST=$BACKEND_HOST
 
 # Copia el build estático
