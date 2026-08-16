@@ -447,9 +447,12 @@ export default function Dashboard() {
 
         {/* Supplements */}
         <div
-          className="bg-card rounded-2xl border border-border p-5 shadow-sm">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-4">Suplementos · hoy</p>
-          <div className="space-y-3">
+          className="bg-card rounded-2xl border border-border p-5 shadow-sm flex flex-col">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1">Suplementos · hoy</p>
+          <p className="text-[10px] text-muted-foreground/70 italic mb-4 leading-tight">
+            * Estas son recomendaciones complementarias, siempre consulta a tu médico.
+          </p>
+          <div className="space-y-3 flex-1">
             {(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => (
               <SupplementItem key={i} sup={sup} checked={!!checked[i]} onToggle={() => setChecked((p) => ({ ...p, [i]: !p[i] }))} gray={gray} />
             ))}

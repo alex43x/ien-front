@@ -111,6 +111,7 @@ export interface Leccion {
   respuesta_tipo: string;
   campos_respuesta: CampoRespuesta[];
   datos_leccion: DatosLeccion;
+  conclusion?: string;
 }
 
 export interface ResponderDiaRequest {
@@ -130,6 +131,7 @@ export interface TodayPlanResponse {
   dia_actual: number;
   completado?: boolean;
   cabecera: string | null;
+  conclusion: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
@@ -340,6 +342,7 @@ export interface DiaPlan {
   fecha_completado: string | null;
   respuesta_usuario: { id: string; valor: any; tipo: string }[] | null;
   cabecera: string | null;
+  conclusion: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
