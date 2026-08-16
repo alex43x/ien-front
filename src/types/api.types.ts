@@ -348,18 +348,33 @@ export interface DiasPlanResponse {
   dias: DiaPlan[];
 }
 
-export interface BienvenidaCompetencia {
-  nombre: string;
-  descripcion: string;
-  respuesta_tipo: string;
-}
-
 export interface BienvenidaResponse {
   tipo: string;
   titulo: string;
   contenido: {
-    mensaje: string;
-    competencias: BienvenidaCompetencia[];
-    llamada_a_accion: string;
+    programa: {
+      nombre: string;
+      subtitulo: string;
+    };
+    introduccion: string;
+    viaje_transformacion: {
+      titulo: string;
+      intro: string;
+      puntos: string[];
+    };
+    competencias_maestras: {
+      titulo: string;
+      descripcion: string;
+      cita: string;
+      nota: string;
+    };
+    momento_es_ahora: {
+      titulo: string;
+      descripcion: string;
+      frases_impacto: string[];
+      pregunta: string;
+    };
+    cierre: string;
+    cita_final: string;
   };
 }
