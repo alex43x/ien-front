@@ -26,11 +26,13 @@ npm run typecheck # Verificación de tipos
 
 ## Entorno
 
-Variable en `.env`:
+| Variable | Ámbito | Default | Descripción |
+|----------|--------|---------|-------------|
+| `VITE_API_URL` | Build-time (`.env` o build-arg) | `http://localhost:3000/api` | URL base del backend a la que llama el navegador. En Docker se compila con `/api` (relativa) para que Nginx haga el proxy. |
+| `BACKEND_HOST` | Runtime (contenedor Nginx) | `backend` | Host interno del backend hacia el que Nginx proxyfía `/api/*`. |
+| `BACKEND_PORT` | Runtime (contenedor Nginx) | `3000` | Puerto del backend para el proxy de Nginx. |
 
-| Variable | Default | Descripción |
-|----------|---------|-------------|
-| `VITE_API_URL` | `http://localhost:3000/api` | URL base del backend |
+En desarrollo local, basta con un `.env` con `VITE_API_URL=http://localhost:3000/api`. En producción (Docker), Nginx resuelve `http://${BACKEND_HOST}:${BACKEND_PORT}` desde el template `nginx.conf` (`/etc/nginx/templates/default.conf.template`); `BACKEND_HOST`/`BACKEND_PORT` se definen como `environment` en `docker-compose.yml`.
 
 ## Estructura del proyecto
 

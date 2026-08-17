@@ -21,8 +21,12 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Template de Nginx -- se resuelve en runtime vía entrypoint de nginx:alpine
-# (docker-entrypoint.d/20-envsubst-on-templates.sh) usando la variable BACKEND_HOST
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
+# (docker-entrypoint.d/20-envsubst-on-templates.sh) usando las variables
+# BACKEND_HOST y BACKEND_PORT
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+
+ENV BACKEND_HOST=backend \
+    BACKEND_PORT=3000
 
 EXPOSE 80
 
