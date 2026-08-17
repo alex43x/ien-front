@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { ChevronLeft, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send } from "lucide-react";
+import { ChevronLeft, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star } from "lucide-react";
 import { useToneColors } from "@/hooks/useToneColors";
 import { planService } from "../services/plan.service";
 import api from "../services/api";
@@ -15,6 +15,7 @@ export default function Lectura() {
   const returnTo = navState?.returnTo || "/dashboard";
   const [scrollPct, setScrollPct] = useState(0);
   const [leccion, setLeccion] = useState<Leccion | null>(null);
+  const [conclusion, setConclusion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [savedAnswers, setSavedAnswers] = useState<{ id: string; valor: any; tipo: string }[]>([]);
@@ -77,6 +78,7 @@ export default function Lectura() {
         const todayData = await planService.getTodayPlan();
         if (todayData.leccion) {
           setLeccion(todayData.leccion);
+          setConclusion(todayData.conclusion ?? null);
         } else {
           // Si ya se completó hoy, la lección viene como null en /today.
           // La buscamos en el historial completo de días para que el usuario pueda releerla.
@@ -126,11 +128,23 @@ export default function Lectura() {
     try {
       const respuesta_usuario = leccion.campos_respuesta?.length
         ? leccion.campos_respuesta.map(c => ({
-            id: c.id,
-            valor: answers[c.id],
-            tipo: c.tipo
-          }))
+          id: c.id,
+          valor: answers[c.id],
+          tipo: c.tipo
+        }))
         : undefined;
+
+      // Si el día tiene conclusión → ir a BloqueCierre sin completar aún
+      if (conclusion) {
+        navigate("/bloque-cierre", {
+          state: {
+            diaActual: leccion.dia_actual,
+            conclusion,
+            respuesta_usuario,
+          },
+        });
+        return;
+      }
 
       await planService.completeDay(respuesta_usuario);
       navigate(returnTo);
@@ -212,6 +226,10 @@ export default function Lectura() {
           {/* Concepto / Cita */}
           {leccion.datos_leccion?.concepto && (
             <div className="rounded-2xl p-5 mb-8" style={{ backgroundColor: tone.bg, borderLeft: `4px solid ${tone.color}` }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Lightbulb size={14} style={{ color: tone.color }} />
+                <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: tone.text }}>Concepto del día</p>
+              </div>
               <p className="font-['Lora'] text-lg italic text-foreground leading-relaxed">
                 "{leccion.datos_leccion.concepto}"
               </p>
@@ -227,12 +245,27 @@ export default function Lectura() {
             </div>
           )}
 
+          {/* Principio Clave */}
+          {leccion.datos_leccion?.principio && (
+            <div className="bg-card rounded-2xl border border-border p-5 mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <Star size={14} style={{ color: tone.color }} />
+                <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: tone.text }}>Principio Clave</p>
+              </div>
+              <p className="text-sm font-['Lora'] text-muted-foreground leading-relaxed">
+                {leccion.datos_leccion.principio}
+              </p>
+            </div>
+          )}
+
           {/* Ejercicio del día */}
           {leccion.datos_leccion?.ejercicio && (
             <div className="bg-card rounded-2xl border border-border p-5 mb-8">
               <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Ejercicio del día</p>
               <h3 className="text-sm font-semibold text-foreground mb-3">{leccion.datos_leccion.ejercicio.nombre}</h3>
               <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{leccion.datos_leccion.ejercicio.instruccion}</p>
+
+
 
               {readOnly && savedAnswers.length > 0 && (
                 <div className="space-y-4">
@@ -352,10 +385,13 @@ export default function Lectura() {
           {/* Suplementación recomendada */}
           {leccion.datos_leccion?.suplementacion && leccion.datos_leccion.suplementacion.length > 0 && (
             <div className="bg-card rounded-2xl border border-border p-5 mb-8">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-1">
                 <Pill size={14} style={{ color: tone.color }} />
                 <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Suplementación recomendada</p>
               </div>
+              <p className="text-[10px] text-muted-foreground/70 italic mb-4 leading-tight">
+                * Estas son recomendaciones complementarias, siempre consulta a tu médico.
+              </p>
               <div className="space-y-3">
                 {leccion.datos_leccion.suplementacion.map((sup, idx: number) => (
                   <div key={idx} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: tone.bg }}>
@@ -374,12 +410,6 @@ export default function Lectura() {
             </div>
           )}
 
-          {/* Principio o recomendación */}
-          {leccion.datos_leccion?.principio && (
-            <p className="text-base font-['Lora'] italic text-muted-foreground leading-relaxed mb-10">
-              💡 {leccion.datos_leccion.principio}
-            </p>
-          )}
 
           {/* CTA */}
           {!readOnly && (
@@ -397,7 +427,9 @@ export default function Lectura() {
                   style={{ backgroundColor: tone.color }}>
                   {completando
                     ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    : <><Send size={15} /> Completar actividad</>
+                    : conclusion
+                      ? <><Send size={15} /> Continuar a reflexión final</>
+                      : <><Send size={15} /> Completar actividad</>
                   }
                 </button>
                 {!canContinue && (

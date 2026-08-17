@@ -14,7 +14,7 @@ import ActividadesDiariasLista from "@/components/ActividadesDiariasLista";
 import { planService } from "../services/plan.service";
 import { useToneColors, useGray, type GrayColors } from "../hooks/useToneColors";
 
-import type { Leccion, PlanProfileResponse, TestInicialResponse, DiaPlan } from "../types/api.types";
+import type { Leccion, PlanProfileResponse, TestInicialResponse, DiaPlan, BienvenidaResponse } from "../types/api.types";
 
 const SUPPLEMENT_ICONS: Record<string, any> = {
   'Ashwagandha': TrendingUp,
@@ -138,6 +138,9 @@ export default function Dashboard() {
   const [planLoading, setPlanLoading] = useState(true);
   const [planError, setPlanError] = useState<string | null>(null);
   const [hitoAlcanzado, setHitoAlcanzado] = useState<number | null>(null);
+  
+  const [bienvenidaOpen, setBienvenidaOpen] = useState(false);
+  const [bienvenidaData, setBienvenidaData] = useState<BienvenidaResponse | null>(null);
 
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
@@ -163,6 +166,13 @@ export default function Dashboard() {
       } catch (err: any) {
         if (err.response?.status === 404) {
           setPlanError("no_plan");
+          try {
+            const data = await planService.getBienvenida();
+            setBienvenidaData(data);
+            setBienvenidaOpen(true);
+          } catch (e) {
+            console.error("No se pudo cargar la bienvenida:", e);
+          }
         } else {
           setPlanError("error");
         }
@@ -457,9 +467,12 @@ export default function Dashboard() {
 
         {/* Supplements */}
         <div
-          className="bg-card rounded-2xl border border-border p-5 shadow-sm">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-4">Suplementos · hoy</p>
-          <div className="space-y-3">
+          className="bg-card rounded-2xl border border-border p-5 shadow-sm flex flex-col">
+          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1">Suplementos · hoy</p>
+          <p className="text-[10px] text-muted-foreground/70 italic mb-4 leading-tight">
+            * Estas son recomendaciones complementarias, siempre consulta a tu médico.
+          </p>
+          <div className="space-y-3 flex-1">
             {(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => (
               <SupplementItem key={i} sup={sup} checked={!!checked[i]} onToggle={() => setChecked((p) => ({ ...p, [i]: !p[i] }))} gray={gray} />
             ))}
@@ -540,6 +553,115 @@ export default function Dashboard() {
                 )}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de Bienvenida (Post-Registro) ── */}
+      {bienvenidaOpen && bienvenidaData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-2xl rounded-2xl p-6 shadow-xl border border-border animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Heart size={20} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="font-['Lora'] text-2xl font-semibold text-foreground">
+                  {bienvenidaData.titulo}
+                </h2>
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mt-0.5">
+                  {bienvenidaData.contenido?.programa?.nombre}
+                </p>
+              </div>
+            </div>
+            
+            <p className="text-xs text-primary font-mono mb-4 uppercase tracking-wider font-semibold">
+              {bienvenidaData.contenido?.programa?.subtitulo}
+            </p>
+
+            <div className="space-y-6 mb-6 max-h-[60vh] overflow-y-auto pr-3 custom-scrollbar">
+              <p className="text-sm text-foreground leading-relaxed font-['Lora']">
+                {bienvenidaData.contenido?.introduccion}
+              </p>
+
+              {bienvenidaData.contenido?.viaje_transformacion && (
+                <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    {bienvenidaData.contenido.viaje_transformacion.titulo}
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-3 font-['Lora']">
+                    {bienvenidaData.contenido.viaje_transformacion.intro}
+                  </p>
+                  <ul className="space-y-2">
+                    {bienvenidaData.contenido.viaje_transformacion.puntos?.map((p, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed font-['Lora']">
+                        <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-primary" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {bienvenidaData.contenido?.competencias_maestras && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {bienvenidaData.contenido.competencias_maestras.titulo}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-['Lora']">
+                    {bienvenidaData.contenido.competencias_maestras.descripcion}
+                  </p>
+                  <blockquote className="border-l-2 border-primary pl-3 py-1 my-2 italic text-sm text-foreground font-['Lora']">
+                    "{bienvenidaData.contenido.competencias_maestras.cita}"
+                  </blockquote>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-['Lora'] bg-card p-3 rounded-xl border border-border">
+                    {bienvenidaData.contenido.competencias_maestras.nota}
+                  </p>
+                </div>
+              )}
+
+              {bienvenidaData.contenido?.momento_es_ahora && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {bienvenidaData.contenido.momento_es_ahora.titulo}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-['Lora']">
+                    {bienvenidaData.contenido.momento_es_ahora.descripcion}
+                  </p>
+                  <div className="grid gap-2">
+                    {bienvenidaData.contenido.momento_es_ahora.frases_impacto?.map((frase, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-foreground font-medium bg-secondary/30 p-2.5 rounded-lg border border-border/30">
+                        <CheckCircle2 size={14} className="text-primary flex-shrink-0" />
+                        <span>{frase}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold text-center text-primary mt-4">
+                    {bienvenidaData.contenido.momento_es_ahora.pregunta}
+                  </p>
+                </div>
+              )}
+
+              {bienvenidaData.contenido?.cierre && (
+                <p className="text-sm text-foreground leading-relaxed font-['Lora']">
+                  {bienvenidaData.contenido.cierre}
+                </p>
+              )}
+
+              <p className="text-sm italic text-center text-muted-foreground pt-4 pb-2 font-['Lora']">
+                "{bienvenidaData.contenido?.cita_final}"
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setBienvenidaOpen(false);
+                navigate("/preguntas");
+              }}
+              className="w-full py-4 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              Comenzar Test Inicial <ChevronDown size={16} className="-rotate-90" />
+            </button>
           </div>
         </div>
       )}

@@ -14,7 +14,7 @@ export interface Usuario {
   id: string;
   nombre: string;
   email: string;
-  rol?: 'usuario' | 'admin_negocio' | 'admin_general';
+  rol?: 'usuario' | 'admin_negocio' | 'admin_general' | 'moderador_tienda';
   tiendas_administradas?: string[];
 }
 
@@ -111,6 +111,7 @@ export interface Leccion {
   respuesta_tipo: string;
   campos_respuesta: CampoRespuesta[];
   datos_leccion: DatosLeccion;
+  conclusion?: string;
 }
 
 export interface ResponderDiaRequest {
@@ -130,6 +131,7 @@ export interface TodayPlanResponse {
   dia_actual: number;
   completado?: boolean;
   cabecera: string | null;
+  conclusion: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
@@ -337,6 +339,7 @@ export interface DiaPlan {
   fecha_completado: string | null;
   respuesta_usuario: { id: string; valor: any; tipo: string }[] | null;
   cabecera: string | null;
+  conclusion: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
@@ -345,18 +348,33 @@ export interface DiasPlanResponse {
   dias: DiaPlan[];
 }
 
-export interface BienvenidaCompetencia {
-  nombre: string;
-  descripcion: string;
-  respuesta_tipo: string;
-}
-
 export interface BienvenidaResponse {
   tipo: string;
   titulo: string;
   contenido: {
-    mensaje: string;
-    competencias: BienvenidaCompetencia[];
-    llamada_a_accion: string;
+    programa: {
+      nombre: string;
+      subtitulo: string;
+    };
+    introduccion: string;
+    viaje_transformacion: {
+      titulo: string;
+      intro: string;
+      puntos: string[];
+    };
+    competencias_maestras: {
+      titulo: string;
+      descripcion: string;
+      cita: string;
+      nota: string;
+    };
+    momento_es_ahora: {
+      titulo: string;
+      descripcion: string;
+      frases_impacto: string[];
+      pregunta: string;
+    };
+    cierre: string;
+    cita_final: string;
   };
 }

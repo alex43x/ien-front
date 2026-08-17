@@ -17,6 +17,7 @@ import Activar from "./Activar";
 import Horario from "./Horario";
 import Lectura from "./Lectura";
 import BloqueIntro from "./BloqueIntro";
+import BloqueCierre from "./BloqueCierre";
 import Preguntas from "./Preguntas";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminRoute from "../components/AdminRoute";
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
       { path: "/lectura", element: <Lectura /> },
       { path: "/lectura/:diaNumero", element: <Lectura /> },
       { path: "/bloque-intro", element: <BloqueIntro /> },
+      { path: "/bloque-cierre", element: <BloqueCierre /> },
       { path: "/preguntas", element: <Preguntas /> },
     ],
   },
