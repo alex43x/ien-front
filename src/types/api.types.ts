@@ -67,9 +67,22 @@ export interface PasoEjercicio {
   max?: number;
 }
 
+export interface SeccionLeccion {
+  titulo?: string;
+  parrafos?: string[];
+  lista?: string[];
+}
+
+export interface TablaInfoDatos {
+  titulo?: string;
+  columnas: { id: string; etiqueta: string }[];
+  filas: string[][];
+}
+
 export interface EjercicioDatos {
   nombre: string;
   instruccion: string;
+  instruccion_colapsable?: boolean;
   pasos?: PasoEjercicio[];
   tipo?: string;
   respuesta_tipo?: string;
@@ -88,20 +101,37 @@ export interface DatosLeccion {
   bloque?: string;
   concepto?: string;
   contenido?: string;
+  secciones?: SeccionLeccion[];
+  principio?: string;
+  principio_secciones?: SeccionLeccion[];
+  tablas_info?: TablaInfoDatos[];
   ejercicio?: EjercicioDatos;
   suplementacion?: SuplementoDatos[];
-  principio?: string;
   recursos?: any[];
+}
+
+export interface ColumnaTabla {
+  id: string;
+  etiqueta: string;
+  tipo?: 'texto' | 'numero' | 'escala';
+  min?: number;
+  max?: number;
 }
 
 export interface CampoRespuesta {
   id: string;
   etiqueta: string;
-  tipo: 'texto' | 'numero' | 'escala' | 'reflexion' | 'accion';
+  tipo: 'texto' | 'numero' | 'escala' | 'reflexion' | 'accion' | 'tabla';
   min?: number;
   max?: number;
   opciones?: { valor: any; etiqueta: string }[];
+  columnas?: ColumnaTabla[];
+  filas?: number;
+  requerido?: 'todas' | 'ninguna';
+  layout?: 'grid';
 }
+
+export type ValorTabla = Record<string, any>[];
 
 export interface Leccion {
   dia_actual: number;

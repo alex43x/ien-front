@@ -15,6 +15,19 @@ function getBlockForDay(dayNum: number) {
 }
 
 function renderValorCampo(campo: { id: string; valor: any; tipo: string }, toneColor: string, greenColor: string, greenText: string, grayMid: string, grayLight: string, grayFaint: string) {
+  if (campo.tipo === "tabla") {
+    const filas = Array.isArray(campo.valor) ? campo.valor : [];
+    return (
+      <div className="space-y-1.5">
+        {filas.map((fila: Record<string, any>, i: number) => (
+          <div key={i} className="rounded-xl px-3 py-2 text-sm text-muted-foreground flex items-start gap-2" style={{ backgroundColor: grayFaint }}>
+            <span className="text-xs font-mono font-bold mt-0.5" style={{ color: toneColor }}>{i + 1}</span>
+            <span className="flex-1">{Object.values(fila ?? {}).filter(v => v !== "" && v !== undefined && v !== null).join(" · ") || "—"}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
   if (campo.tipo === "escala") {
     return (
       <div className="flex items-center gap-2">
@@ -34,7 +47,7 @@ function renderValorCampo(campo: { id: string; valor: any; tipo: string }, toneC
     return (
       <div
         className="rounded-xl p-3 text-sm text-muted-foreground leading-relaxed italic"
-        style={{ backgroundColor: grayFaint, borderLeft: `3px solid ${toneColor}` }}
+        style={{ backgroundColor: grayFaint, borderLeft: `3px solid ${toneColor}`, whiteSpace: "pre-line" }}
       >
         &ldquo;{campo.valor}&rdquo;
       </div>
@@ -146,7 +159,7 @@ function DayCard({ dia, block, isExpanded, onToggle, greenTone, gray }: { dia: D
                 const etiqueta = campo?.etiqueta || pasoTexto || `Paso ${i + 1}`;
                 return (
                   <div key={i}>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">{etiqueta}</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1" style={{ whiteSpace: 'pre-line' }}>{etiqueta}</p>
                     {renderValorCampo(r, bc.color, greenTone.color, greenTone.text, gray.mid, gray.light, gray.faint)}
                   </div>
                 );

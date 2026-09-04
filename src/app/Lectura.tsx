@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { ChevronLeft, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator } from "lucide-react";
 import { useToneColors } from "@/hooks/useToneColors";
+import Secciones from "@/components/ui/Secciones";
+import TablaInfo from "@/components/ui/TablaInfo";
+import TablaCampo, { tablaCompleta } from "@/components/ui/TablaCampo";
 import { planService } from "../services/plan.service";
 import api from "../services/api";
-import type { Leccion } from "../types/api.types";
+import type { Leccion, CampoRespuesta } from "../types/api.types";
 
 export default function Lectura() {
   const navigate = useNavigate();
@@ -21,6 +24,7 @@ export default function Lectura() {
   const [savedAnswers, setSavedAnswers] = useState<{ id: string; valor: any; tipo: string }[]>([]);
   const [completando, setCompletando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [instruccionAbierta, setInstruccionAbierta] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const tone = useToneColors("green");
 
@@ -113,6 +117,7 @@ export default function Lectura() {
     if (leccion.campos_respuesta && leccion.campos_respuesta.length > 0) {
       const faltan = leccion.campos_respuesta.filter(c => {
         const v = answers[c.id];
+        if (c.tipo === 'tabla') return !tablaCompleta(c, v);
         if (c.tipo === 'escala') return v === undefined;
         if (c.tipo === 'accion') return !v;
         return v === undefined || v === '';
@@ -156,6 +161,138 @@ export default function Lectura() {
   };
 
   const canContinue = scrollPct >= 80;
+
+  const renderCampo = (campo: CampoRespuesta, idx: number) => {
+    if (!leccion) return null;
+    return (
+    <div key={campo.id} className="flex items-start gap-4">
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
+        style={{ backgroundColor: tone.soft, color: tone.color }}>
+        {idx + 1}
+      </div>
+      <div className="flex-1 pt-1.5 min-w-0">
+        <p className="text-sm font-medium text-foreground mb-2" style={{ whiteSpace: 'pre-line' }}>{campo.etiqueta}</p>
+        {campo.tipo === 'tabla' && (
+          <TablaCampo
+            campo={campo}
+            valor={answers[campo.id]}
+            onChange={(v) => setAnswer(campo.id, v)}
+            tone={tone}
+          />
+        )}
+        {campo.tipo === 'escala' && (
+          <div className="bg-background rounded-xl p-2 md:p-4">
+            <div className="grid grid-cols-5 gap-2 md:grid-cols-10 md:gap-1.5 justify-items-center mb-3">
+              {Array.from({ length: (campo.max ?? 10) - (campo.min ?? 1) + 1 }, (_, i) => (campo.min ?? 1) + i).map((val) => {
+                const selected = answers[campo.id] === val;
+                return (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setAnswer(campo.id, val)}
+                    className="w-full aspect-square max-w-[52px] rounded-xl font-mono font-semibold text-sm transition-all hover:scale-105"
+                    style={{
+                      backgroundColor: selected ? tone.color : tone.bg,
+                      color: selected ? 'var(--background)' : tone.color,
+                        border: `2px solid ${selected ? tone.color : tone.soft}`,
+                    }}>
+                    {val}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">Selecciona una opción</p>
+</div>
+        )}
+
+        {leccion.dia_actual === 25 && campo.tipo === 'escala' && idx === 3 && (
+            <div className="mt-6 p-4 rounded-xl bg-card border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Calculator size={18} style={{ color: tone.color }} />
+                <span className="font-semibold text-sm" style={{ color: tone.text }}>Resumen de Agotamiento</span>
+              </div>
+              <div className="grid grid-cols-4 gap-3 mb-3">
+                {leccion.campos_respuesta
+                  .filter(c => c.tipo === 'escala')
+                  .map((c, i) => (
+                    <div key={c.id} className="text-center p-2 rounded-lg" style={{ backgroundColor: tone.bg }}>
+                      <p className="text-xs text-muted-foreground mb-1">{c.etiqueta.split('—')[0]?.trim() || `Señal ${i + 1}`}</p>
+                      <p className="text-2xl font-bold font-mono" style={{ color: answers[c.id] !== undefined ? tone.color : tone.text }}>
+                        {answers[c.id] ?? '—'}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: tone.text }}>Total</span>
+                  <span className="font-bold font-mono" style={{ color: tone.color }}>
+                    {(() => {
+                      const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
+                      const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
+                      return `${total}/40`;
+                    })()}
+                  </span>
+                </div>
+                <div className="px-3 py-2 rounded-lg text-sm font-medium" style={{
+                  backgroundColor: (() => {
+                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
+                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
+                    if (total <= 15) return '#dcfce7';
+                    if (total <= 25) return '#fef3c7';
+                    return '#fee2e2';
+                  })(),
+                  color: (() => {
+                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
+                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
+                    if (total <= 15) return '#166534';
+                    if (total <= 25) return '#854d0e';
+                    return '#991b1b';
+                  })()
+                }}>
+                  {(() => {
+                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
+                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
+                    if (total <= 15) return '✅ Energía óptima — Continúa tu rutina normal';
+                    if (total <= 25) return '⚠️ Fatiga moderada — Implementa descanso activo';
+                    return '🔴 Agotamiento significativo — Descanso obligatorio';
+                  })()}
+              </div>
+            </div>
+          </div>
+        )}
+        {campo.tipo === 'texto' && (
+          <textarea
+            className="w-full rounded-xl border text-sm text-foreground p-3 resize-none focus:outline-none bg-background transition-all focus:shadow-sm"
+            style={{ borderColor: 'var(--border)', minHeight: 80, fontFamily: "'Lora', serif" }}
+            placeholder="Escribe tu respuesta aquí..."
+            value={answers[campo.id] ?? ''}
+            onChange={(e) => setAnswer(campo.id, e.target.value)}
+          />
+        )}
+        {campo.tipo === 'accion' && (
+          <button
+            type="button"
+            onClick={() => setAnswer(campo.id, !answers[campo.id])}
+            className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all hover:shadow-sm border"
+            style={{
+              backgroundColor: answers[campo.id] ? tone.bg : 'var(--secondary)',
+              borderColor: answers[campo.id] ? tone.color : 'var(--border)'
+            }}>
+            {answers[campo.id] ? (
+              <CheckSquare size={18} style={{ color: tone.color }} />
+            ) : (
+              <Square size={18} className="text-muted-foreground" />
+            )}
+            <span className="text-sm" style={{ color: answers[campo.id] ? 'var(--foreground)' : 'var(--muted-foreground)' }}>
+              {answers[campo.id] ? 'Completado' : 'Marcar como hecho'}
+            </span>
+          </button>
+        )}
+      </div>
+    </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -236,8 +373,12 @@ export default function Lectura() {
             </div>
           )}
 
-          {/* Cuerpo principal del contenido */}
-          {leccion.datos_leccion?.contenido && (
+          {/* Cuerpo principal del contenido: secciones tituladas o párrafo corrido */}
+          {leccion.datos_leccion?.secciones?.length ? (
+            <div className="mb-8">
+              <Secciones secciones={leccion.datos_leccion.secciones} tone={tone} />
+            </div>
+          ) : leccion.datos_leccion?.contenido && (
             <div className="space-y-5 mb-8">
               <p className="text-base text-muted-foreground leading-relaxed" style={{ fontFamily: "'Lora', serif", whiteSpace: 'pre-line' }}>
                 {leccion.datos_leccion.contenido}
@@ -246,15 +387,24 @@ export default function Lectura() {
           )}
 
           {/* Principio Clave */}
-          {leccion.datos_leccion?.principio && (
+          {(leccion.datos_leccion?.principio_secciones?.length || leccion.datos_leccion?.tablas_info?.length) && (
             <div className="bg-card rounded-2xl border border-border p-5 mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <Star size={14} style={{ color: tone.color }} />
                 <p className="text-[10px] font-mono uppercase tracking-wider" style={{ color: tone.text }}>Principio Clave</p>
               </div>
-              <p className="text-sm font-['Lora'] text-muted-foreground leading-relaxed" style={{ whiteSpace: 'pre-line' }}>
-                {leccion.datos_leccion.principio}
-              </p>
+              <div className="space-y-5">
+                {leccion.datos_leccion?.principio_secciones?.length ? (
+                  <Secciones secciones={leccion.datos_leccion.principio_secciones} tone={tone} compacto />
+                ) : leccion.datos_leccion?.principio && (
+                  <p className="text-sm font-['Lora'] text-muted-foreground leading-relaxed" style={{ whiteSpace: 'pre-line' }}>
+                    {leccion.datos_leccion.principio}
+                  </p>
+                )}
+                {leccion.datos_leccion?.tablas_info?.map((t, i) => (
+                  <TablaInfo key={i} tabla={t} />
+                ))}
+              </div>
             </div>
           )}
 
@@ -263,7 +413,32 @@ export default function Lectura() {
             <div className="bg-card rounded-2xl border border-border p-5 mb-8">
               <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Ejercicio del día</p>
               <h3 className="text-sm font-semibold text-foreground mb-3">{leccion.datos_leccion.ejercicio.nombre}</h3>
-              <p className="text-sm text-muted-foreground mb-5 leading-relaxed" style={{ whiteSpace: 'pre-line' }}>{leccion.datos_leccion.ejercicio.instruccion}</p>
+              {leccion.datos_leccion.ejercicio.instruccion_colapsable ? (
+                <div className="mb-5">
+                  <button
+                    type="button"
+                    onClick={() => setInstruccionAbierta(a => !a)}
+                    className="flex items-center gap-1.5 text-xs font-semibold transition-opacity hover:opacity-80"
+                    style={{ color: tone.color }}
+                    aria-expanded={instruccionAbierta}
+                  >
+                    {instruccionAbierta ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    {instruccionAbierta ? "Ocultar protocolo" : "Ver protocolo completo"}
+                  </button>
+                  <div
+                    className="grid transition-all duration-300 ease-out"
+                    style={{ gridTemplateRows: instruccionAbierta ? "1fr" : "0fr" }}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="text-sm text-muted-foreground leading-relaxed pt-3" style={{ whiteSpace: "pre-line" }}>
+                        {leccion.datos_leccion.ejercicio.instruccion}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground mb-5 leading-relaxed" style={{ whiteSpace: 'pre-line' }}>{leccion.datos_leccion.ejercicio.instruccion}</p>
+              )}
 
 
               {readOnly && savedAnswers.length > 0 && (
@@ -277,8 +452,17 @@ export default function Lectura() {
                           style={{ backgroundColor: tone.soft, color: tone.color }}>
                           {idx + 1}
                         </div>
-                        <div className="flex-1 pt-1.5">
-                          <p className="text-sm font-medium text-foreground mb-2">{campo?.etiqueta || pasoTexto || saved.id}</p>
+                        <div className="flex-1 pt-1.5 min-w-0">
+                          <p className="text-sm font-medium text-foreground mb-2" style={{ whiteSpace: 'pre-line' }}>{campo?.etiqueta || pasoTexto || saved.id}</p>
+                          {saved.tipo === 'tabla' && (
+                            campo ? (
+                              <TablaCampo campo={campo} valor={saved.valor} readOnly tone={tone} legacyTexto={typeof saved.valor === 'string' ? saved.valor : undefined} />
+                            ) : (
+                              <div className="rounded-xl p-3 text-sm italic text-muted-foreground leading-relaxed" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
+                                "{typeof saved.valor === 'string' ? saved.valor : 'Respuesta guardada'}"
+                              </div>
+                            )
+                          )}
                           {saved.tipo === 'escala' && (
                             <div className="flex items-center gap-3">
                               <div className="flex-1 h-2.5 rounded-full" style={{ backgroundColor: tone.bg }}>
@@ -288,7 +472,7 @@ export default function Lectura() {
                             </div>
                           )}
                           {saved.tipo === 'texto' && (
-                            <div className="rounded-xl p-3 text-sm italic text-muted-foreground leading-relaxed" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}` }}>
+                            <div className="rounded-xl p-3 text-sm italic text-muted-foreground leading-relaxed" style={{ backgroundColor: tone.bg, borderLeft: `3px solid ${tone.color}`, whiteSpace: 'pre-line' }}>
                               "{saved.valor}"
                             </div>
                           )}
@@ -313,126 +497,30 @@ export default function Lectura() {
 
               {!readOnly && leccion.campos_respuesta && leccion.campos_respuesta.length > 0 && (
                 <div className="space-y-4">
-                  {leccion.campos_respuesta.map((campo, idx) => (
-                    <div key={campo.id} className="flex items-start gap-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-['Lora'] text-lg font-bold"
-                        style={{ backgroundColor: tone.soft, color: tone.color }}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1 pt-1.5">
-                        <p className="text-sm font-medium text-foreground mb-2">{campo.etiqueta}</p>
-                        {campo.tipo === 'escala' && (
-                          <div className="bg-background rounded-xl p-2 md:p-4">
-                            <div className="grid grid-cols-5 gap-2 md:grid-cols-10 md:gap-1.5 justify-items-center mb-3">
-                              {Array.from({ length: (campo.max ?? 10) - (campo.min ?? 1) + 1 }, (_, i) => (campo.min ?? 1) + i).map((val) => {
-                                const selected = answers[campo.id] === val;
-                                return (
-                                  <button
-                                    key={val}
-                                    type="button"
-                                    onClick={() => setAnswer(campo.id, val)}
-                                    className="w-full aspect-square max-w-[52px] rounded-xl font-mono font-semibold text-sm transition-all hover:scale-105"
-                                    style={{
-                                      backgroundColor: selected ? tone.color : tone.bg,
-                                      color: selected ? 'var(--background)' : tone.color,
-                                        border: `2px solid ${selected ? tone.color : tone.soft}`,
-                                    }}>
-                                    {val}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            <p className="text-xs text-muted-foreground text-center">Selecciona una opción</p>
-</div>
-                        )}
-
-                        {leccion.dia_actual === 25 && campo.tipo === 'escala' && idx === 3 && (
-                            <div className="mt-6 p-4 rounded-xl bg-card border border-border">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Calculator size={18} style={{ color: tone.color }} />
-                                <span className="font-semibold text-sm" style={{ color: tone.text }}>Resumen de Agotamiento</span>
-                              </div>
-                              <div className="grid grid-cols-4 gap-3 mb-3">
-                                {leccion.campos_respuesta
-                                  .filter(c => c.tipo === 'escala')
-                                  .map((c, i) => (
-                                    <div key={c.id} className="text-center p-2 rounded-lg" style={{ backgroundColor: tone.bg }}>
-                                      <p className="text-xs text-muted-foreground mb-1">{c.etiqueta.split('—')[0]?.trim() || `Señal ${i + 1}`}</p>
-                                      <p className="text-2xl font-bold font-mono" style={{ color: answers[c.id] !== undefined ? tone.color : tone.text }}>
-                                        {answers[c.id] ?? '—'}
-                                      </p>
-                                    </div>
-                                  ))}
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                  <span style={{ color: tone.text }}>Total</span>
-                                  <span className="font-bold font-mono" style={{ color: tone.color }}>
-                                    {(() => {
-                                      const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
-                                      const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
-                                      return `${total}/40`;
-                                    })()}
-                                  </span>
-                                </div>
-                                <div className="px-3 py-2 rounded-lg text-sm font-medium" style={{
-                                  backgroundColor: (() => {
-                                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
-                                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
-                                    if (total <= 15) return '#dcfce7';
-                                    if (total <= 25) return '#fef3c7';
-                                    return '#fee2e2';
-                                  })(),
-                                  color: (() => {
-                                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
-                                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
-                                    if (total <= 15) return '#166534';
-                                    if (total <= 25) return '#854d0e';
-                                    return '#991b1b';
-                                  })()
-                                }}>
-                                  {(() => {
-                                    const escalaIds = leccion.campos_respuesta?.filter(c => c.tipo === 'escala').map(c => c.id) || [];
-                                    const total = escalaIds.reduce((sum, id) => sum + (answers[id] || 0), 0);
-                                    if (total <= 15) return '✅ Energía óptima — Continúa tu rutina normal';
-                                    if (total <= 25) return '⚠️ Fatiga moderada — Implementa descanso activo';
-                                    return '🔴 Agotamiento significativo — Descanso obligatorio';
-                                  })()}
-                              </div>
-                            </div>
+                  {(() => {
+                    const nodes: ReactNode[] = [];
+                    let buf: { campo: CampoRespuesta; idx: number }[] = [];
+                    const flush = () => {
+                      if (!buf.length) return;
+                      if (buf.length === 1) {
+                        nodes.push(renderCampo(buf[0].campo, buf[0].idx));
+                      } else {
+                        const first = buf[0].idx;
+                        nodes.push(
+                          <div key={`grid-${first}`} className="grid md:grid-cols-2 gap-4 w-full">
+                            {buf.map(({ campo, idx }) => renderCampo(campo, idx))}
                           </div>
-                        )}
-                        {campo.tipo === 'texto' && (
-                          <textarea
-                            className="w-full rounded-xl border text-sm text-foreground p-3 resize-none focus:outline-none bg-background transition-all focus:shadow-sm"
-                            style={{ borderColor: 'var(--border)', minHeight: 80, fontFamily: "'Lora', serif" }}
-                            placeholder="Escribe tu respuesta aquí..."
-                            value={answers[campo.id] ?? ''}
-                            onChange={(e) => setAnswer(campo.id, e.target.value)}
-                          />
-                        )}
-                        {campo.tipo === 'accion' && (
-                          <button
-                            type="button"
-                            onClick={() => setAnswer(campo.id, !answers[campo.id])}
-                            className="flex items-center gap-3 p-3 rounded-xl w-full text-left transition-all hover:shadow-sm border"
-                            style={{
-                              backgroundColor: answers[campo.id] ? tone.bg : 'var(--secondary)',
-                              borderColor: answers[campo.id] ? tone.color : 'var(--border)'
-                            }}>
-                            {answers[campo.id] ? (
-                              <CheckSquare size={18} style={{ color: tone.color }} />
-                            ) : (
-                              <Square size={18} className="text-muted-foreground" />
-                            )}
-                            <span className="text-sm" style={{ color: answers[campo.id] ? 'var(--foreground)' : 'var(--muted-foreground)' }}>
-                              {answers[campo.id] ? 'Completado' : 'Marcar como hecho'}
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                        );
+                      }
+                      buf = [];
+                    };
+                    leccion.campos_respuesta.forEach((campo, idx) => {
+                      if (campo.layout === 'grid') buf.push({ campo, idx });
+                      else { flush(); nodes.push(renderCampo(campo, idx)); }
+                    });
+                    flush();
+                    return nodes;
+                  })()}
                 </div>
               )}
             </div>
