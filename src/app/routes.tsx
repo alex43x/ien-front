@@ -10,6 +10,7 @@ import AdminProducts from "./AdminProducts";
 import AdminCodes from "./AdminCodes";
 import AdminEmails from "./AdminEmails";
 import AdminUsuarios from "./AdminUsuarios";
+import AdminGrupos from "./AdminGrupos";
 import Login from "./Login";
 import Register from "./Register";
 import Bienvenida from "./Bienvenida";
@@ -44,12 +45,12 @@ export const router = createBrowserRouter([
         element: <PublicRoute />,
         children: [
           { path: "/login", element: <Login /> },
+          { path: "/activar", element: <Activar /> },
           { path: "/register", element: <Register /> },
           { path: "/forgot-password", element: <ForgotPassword /> },
           { path: "/reset-password", element: <ResetPassword /> },
         ],
       },
-      { path: "/activar", element: <Activar /> },
       { path: "/horario", element: <Horario /> },
       {
         element: <ProtectedRoute />,
@@ -89,6 +90,7 @@ export const router = createBrowserRouter([
               { path: "/admin/productos", element: <AdminProducts /> },
               { path: "/admin/codigos", element: <AdminCodes /> },
               { path: "/admin/plantillas", element: <AdminEmails /> },
+              { path: "/admin/grupos", element: <AdminGrupos /> },
               { path: "/admin/usuarios", element: <AdminUsuarios /> },
             ],
           },

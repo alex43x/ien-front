@@ -4,6 +4,7 @@ import { CheckCircle2, ArrowRight, Award } from "lucide-react";
 import { BLOCKS } from "@/constants/program";
 import { useToneColors } from "@/hooks/useToneColors";
 import { planService } from "../services/plan.service";
+import Footer from "../components/layout/Footer";
 
 interface BloqueCierreState {
   diaActual: number;
@@ -208,6 +209,7 @@ export default function BloqueCierre() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

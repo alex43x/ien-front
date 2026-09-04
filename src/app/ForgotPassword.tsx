@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowRight, ArrowLeft, Mail, CheckCircle, RotateCw } from "lucide-react";
 import { authService } from "../services/auth.service";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import Footer from "../components/layout/Footer";
 
 const COOLDOWN_SECONDS = 60;
 const COOLDOWN_KEY = "ien_forgot_pw_cooldown";
@@ -68,7 +69,8 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -110,12 +112,15 @@ export default function ForgotPassword() {
             </div>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
@@ -193,6 +198,8 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

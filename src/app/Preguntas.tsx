@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Send, ShieldCheck, BookOpen } 
 import { useToneColors, useGray } from "../hooks/useToneColors";
 import { planService } from "../services/plan.service";
 import type { SetupTestResponse } from "../types/api.types";
+import Footer from "../components/layout/Footer";
 
 const TONO = "red" as const;
 
@@ -78,7 +79,7 @@ export default function Preguntas() {
     }
   };
 
-  const prev = () => setCurrent((c) => Math.max(0, c));
+  const prev = () => setCurrent((c) => Math.max(0, c - 1));
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -264,6 +265,8 @@ export default function Preguntas() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

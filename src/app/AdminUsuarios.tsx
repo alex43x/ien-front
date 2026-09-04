@@ -16,6 +16,8 @@ import type {
   Sucursal,
 } from "../types/api.types";
 import { useAuth } from "../context/AuthContext";
+import GroupSelect from "../components/ui/GroupSelect";
+import { obtenerGrupoId, obtenerNombreGrupo } from "../utils/grupos";
 
 type Tab = "admins" | "moderadores";
 
@@ -42,7 +44,7 @@ export default function AdminUsuarios() {
     nombre: "",
     email: "",
     password: "",
-    tiendas_administradas: [] as string[],
+    grupo_id: "",
     tienda_id: "",
   });
 
@@ -83,7 +85,7 @@ export default function AdminUsuarios() {
 
   // ── Helpers ───────────────────────────────────────────────────────────
   const resetForm = () => {
-    setForm({ nombre: "", email: "", password: "", tiendas_administradas: [], tienda_id: "" });
+    setForm({ nombre: "", email: "", password: "", grupo_id: "", tienda_id: "" });
     setEditing(null);
     setShowPw(false);
     setError("");
@@ -100,7 +102,7 @@ export default function AdminUsuarios() {
       nombre: item.nombre,
       email: item.email,
       password: "",
-      tiendas_administradas: item.tiendas_administradas.map((t) => t._id),
+      grupo_id: obtenerGrupoId(item.grupo_id) ?? "",
       tienda_id: "",
     });
     setShowPw(false);
@@ -114,22 +116,12 @@ export default function AdminUsuarios() {
       nombre: item.nombre,
       email: item.email,
       password: "",
-      tiendas_administradas: [],
+      grupo_id: "",
       tienda_id: item.tienda_moderada?._id || "",
     });
     setShowPw(false);
     setError("");
     setShowForm(true);
-  };
-
-  // ── Toggle tienda checkbox (admin negocio) ────────────────────────────
-  const toggleTienda = (id: string) => {
-    setForm((f) => ({
-      ...f,
-      tiendas_administradas: f.tiendas_administradas.includes(id)
-        ? f.tiendas_administradas.filter((t) => t !== id)
-        : [...f.tiendas_administradas, id],
-    }));
   };
 
   // ── Save ──────────────────────────────────────────────────────────────
@@ -149,8 +141,8 @@ export default function AdminUsuarios() {
         setError("La contraseña debe tener al menos 6 caracteres");
         return;
       }
-      if (form.tiendas_administradas.length === 0) {
-        setError("Debe asignar al menos una sucursal");
+      if (form.grupo_id === "") {
+        setError("Debe seleccionar un grupo");
         return;
       }
 
@@ -159,14 +151,14 @@ export default function AdminUsuarios() {
           await adminService.actualizarAdminNegocio(editing._id, {
             nombre: form.nombre,
             email: form.email,
-            tiendas_administradas: form.tiendas_administradas,
+            grupo_id: form.grupo_id,
           });
         } else {
           await adminService.crearAdminNegocio({
             nombre: form.nombre,
             email: form.email,
             password: form.password,
-            tiendas_administradas: form.tiendas_administradas,
+            grupo_id: form.grupo_id,
           });
         }
         setShowForm(false);
@@ -346,37 +338,15 @@ export default function AdminUsuarios() {
                 </div>
               </div>
 
-              {/* Sucursales — admin negocio: checkboxes / moderador: select */}
+              {/* Admin negocio: grupo / moderador: sucursal */}
               {tab === "admins" ? (
                 <div>
-                  <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Sucursales asignadas</label>
-                  {storesLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-                      Cargando sucursales...
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-48 overflow-y-auto rounded-2xl border border-border p-3">
-                      {stores.map((s) => (
-                        <label key={s._id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-background cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={form.tiendas_administradas.includes(s._id)}
-                            onChange={() => toggleTienda(s._id)}
-                            className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
-                          />
-                          <div>
-                            <span className="text-sm text-foreground">{s.nombre_tienda}</span>
-                            <span className="text-xs text-muted-foreground ml-2">{s.ciudad}</span>
-                          </div>
-                        </label>
-                      ))}
-                      {stores.length === 0 && <p className="text-sm text-muted-foreground py-2">No hay sucursales disponibles</p>}
-                    </div>
-                  )}
-                  {!storesLoading && (
-                    <p className="mt-1 text-[11px] text-muted-foreground">{form.tiendas_administradas.length} sucursal(es) seleccionada(s)</p>
-                  )}
+                  <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Grupo</label>
+                  <GroupSelect
+                    value={form.grupo_id}
+                    onChange={(grupoId) => setForm({ ...form, grupo_id: grupoId })}
+                    required
+                  />
                 </div>
               ) : (
                 <div>
@@ -440,13 +410,11 @@ export default function AdminUsuarios() {
                 </div>
                 <h3 className="mt-4 font-semibold text-foreground">{item.nombre}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{item.email}</p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {item.tiendas_administradas.map((t) => (
-                    <span key={t._id} className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                      <MapPin size={10} />
-                      {t.nombre_tienda}
-                    </span>
-                  ))}
+                <div className="mt-3">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                    <MapPin size={10} />
+                    {obtenerNombreGrupo(item.grupo_id) ?? (typeof item.grupo_id === "string" ? item.grupo_id : "—")}
+                  </span>
                 </div>
               </div>
             ))

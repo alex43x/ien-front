@@ -3,6 +3,7 @@ import { Plus, Power, PowerOff, QrCode, KeyRound } from "lucide-react";
 import { adminService } from "../services/admin.service";
 import type { CodigoActivacion, Sucursal, ProductoAdmin } from "../types/api.types";
 import CodeInput from "../components/CodeInput";
+import { obtenerGrupoId } from "../utils/grupos";
 
 export default function AdminCodes() {
   const [codes, setCodes] = useState<CodigoActivacion[]>([]);
@@ -10,6 +11,8 @@ export default function AdminCodes() {
   const [products, setProducts] = useState<ProductoAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState("");
+  const [codeKey, setCodeKey] = useState(0);
   const [form, setForm] = useState({ codigo: "", producto_id: "", tienda_id: "" });
 
   const fetchData = async () => {
@@ -32,13 +35,18 @@ export default function AdminCodes() {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
+    setError("");
     try {
       await adminService.crearCodigo(form);
       setShowForm(false);
       setForm({ codigo: "", producto_id: "", tienda_id: "" });
+      setError("");
       await fetchData();
-    } catch (err) {
-      console.error("Error creating code", err);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Error al crear el código");
+      // limpiar el CodeInput para evitar reintentar el mismo código duplicado
+      setCodeKey((k) => k + 1);
+      setForm((f) => ({ ...f, codigo: "" }));
     }
   };
 
@@ -84,7 +92,7 @@ export default function AdminCodes() {
           <p className="text-sm text-muted-foreground mt-1">{codes.length} códigos · {activos} activos</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => { setShowForm(true); setError(""); setCodeKey((k) => k + 1); }}
           className="flex items-center gap-2 rounded-2xl bg-foreground px-5 py-3 text-sm font-semibold text-background hover:opacity-90 transition-all"
         >
           <Plus size={16} />
@@ -96,11 +104,15 @@ export default function AdminCodes() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowForm(false)}>
           <div className="bg-card rounded-3xl p-6 w-full max-w-md mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-['Lora'] text-lg font-semibold text-foreground mb-4">Nuevo código de activación</h3>
+            {error && (
+              <div className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive mb-4">{error}</div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Código</label>
                 <CodeInput
-                  onChange={(v) => setForm({ ...form, codigo: v })}
+                  key={codeKey}
+                  onChange={(v) => { setForm({ ...form, codigo: v }); setError(""); }}
                 />
                 <div className="mt-2 flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1"><span className="font-mono font-bold">ABC</span> letras</span>
@@ -129,9 +141,10 @@ export default function AdminCodes() {
                   className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
                 >
                   <option value="">Seleccionar producto</option>
-                  {products.filter(p => {
-                    const tid = typeof p.tienda_id === "string" ? p.tienda_id : p.tienda_id?._id;
-                    return tid === form.tienda_id;
+                  {products.filter((p) => {
+                    const tiendaSel = stores.find((s) => s._id === form.tienda_id);
+                    const grupoTienda = obtenerGrupoId(tiendaSel?.grupo_id);
+                    return obtenerGrupoId(p.grupo_id) === grupoTienda;
                   }).map((p) => (
                     <option key={p._id} value={p._id}>{p.nombre}</option>
                   ))}

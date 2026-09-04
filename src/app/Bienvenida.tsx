@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { planService } from "../services/plan.service";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { useToneColors } from "../hooks/useToneColors";
+import Footer from "../components/layout/Footer";
 import type { BienvenidaResponse } from "../types/api.types";
 import type { Block } from "@/constants/program";
 
@@ -318,6 +319,7 @@ export default function Bienvenida() {
 
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

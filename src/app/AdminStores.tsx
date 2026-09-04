@@ -10,6 +10,8 @@ import {
 import { adminService } from "../services/admin.service";
 import type { Sucursal } from "../types/api.types";
 import { useAuth } from "../context/AuthContext";
+import GroupSelect from "../components/ui/GroupSelect";
+import { obtenerGrupoId, obtenerNombreGrupo } from "../utils/grupos";
 
 export default function AdminStores() {
   const { user } = useAuth();
@@ -20,7 +22,7 @@ export default function AdminStores() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Sucursal | null>(null);
-  const [form, setForm] = useState({ nombre_tienda: "", ciudad: "" });
+  const [form, setForm] = useState({ nombre_tienda: "", ciudad: "", grupo_id: "" });
 
   const fetchStores = async () => {
     try {
@@ -38,13 +40,22 @@ export default function AdminStores() {
   const handleSave = async () => {
     try {
       if (editing) {
-        await adminService.actualizarSucursal(editing._id, form);
+        const body: { nombre_tienda: string; ciudad: string; grupo_id?: string } = {
+          nombre_tienda: form.nombre_tienda,
+          ciudad: form.ciudad,
+        };
+        if (isGeneral) body.grupo_id = form.grupo_id;
+        await adminService.actualizarSucursal(editing._id, body);
       } else {
-        await adminService.crearSucursal(form);
+        await adminService.crearSucursal({
+          nombre_tienda: form.nombre_tienda,
+          ciudad: form.ciudad,
+          grupo_id: form.grupo_id,
+        });
       }
       setShowForm(false);
       setEditing(null);
-      setForm({ nombre_tienda: "", ciudad: "" });
+      setForm({ nombre_tienda: "", ciudad: "", grupo_id: "" });
       await fetchStores();
     } catch (err) {
       console.error("Error saving store", err);
@@ -53,7 +64,7 @@ export default function AdminStores() {
 
   const handleEdit = (store: Sucursal) => {
     setEditing(store);
-    setForm({ nombre_tienda: store.nombre_tienda, ciudad: store.ciudad });
+    setForm({ nombre_tienda: store.nombre_tienda, ciudad: store.ciudad, grupo_id: obtenerGrupoId(store.grupo_id) ?? "" });
     setShowForm(true);
   };
 
@@ -78,7 +89,7 @@ export default function AdminStores() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ nombre_tienda: "", ciudad: "" });
+    setForm({ nombre_tienda: "", ciudad: "", grupo_id: "" });
     setShowForm(true);
   };
 
@@ -134,6 +145,16 @@ export default function AdminStores() {
                   placeholder="Ciudad"
                 />
               </div>
+              {isGeneral && (
+                <div>
+                  <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground">Grupo</label>
+                  <GroupSelect
+                    value={form.grupo_id}
+                    onChange={(grupoId) => setForm({ ...form, grupo_id: grupoId })}
+                    required
+                  />
+                </div>
+              )}
               <div className="flex items-center gap-3 pt-2">
                 <button onClick={() => setShowForm(false)} className="flex-1 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:bg-secondary transition-all">Cancelar</button>
                 <button onClick={handleSave} disabled={!form.nombre_tienda || !form.ciudad} className="flex-1 rounded-2xl bg-foreground px-4 py-3 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50 transition-all">
@@ -179,6 +200,11 @@ export default function AdminStores() {
               <MapPin size={14} />
               {store.ciudad}
             </div>
+            {obtenerNombreGrupo(store.grupo_id) && (
+              <span className="mt-2 inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+                {obtenerNombreGrupo(store.grupo_id)}
+              </span>
+            )}
           </div>
         ))}
         {stores.length === 0 && (

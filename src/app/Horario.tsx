@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Clock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import Footer from "../components/layout/Footer";
 
 export default function Horario() {
   const navigate = useNavigate();
@@ -165,11 +166,11 @@ export default function Horario() {
   );
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
 
       <header className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/activar", { state: regData })} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => navigate("/register", { state: { codigo_activacion: regData.codigo_activacion } })} className="text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft size={20} />
           </button>
           <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
@@ -297,6 +298,7 @@ export default function Horario() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

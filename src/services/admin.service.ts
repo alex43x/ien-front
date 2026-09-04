@@ -11,6 +11,7 @@ import {
   Sucursal,
   ProductoAdmin,
   CodigoActivacion,
+  GrupoDocument,
   CreateAdminNegocioRequest,
   CreateAdminNegocioResponse,
   AdminNegocioItem,
@@ -22,10 +23,27 @@ import {
   CodigoResponse,
 } from '../types/api.types';
 
+// Los listados admin con toResponse devuelven el id en `id` (no `_id`);
+// los objetos poblados anidados sí usan `_id`. Normalizamos en el borde
+// del servicio para que el front consuma siempre `_id`.
+function conId<T extends { id: string }>(items: T[]): Array<Omit<T, 'id'> & { _id: string }> {
+  return items.map(({ id, ...rest }) => ({ _id: id, ...rest }));
+}
+
 export const adminService = {
   getMetrics: async () => {
     const response = await api.get<AdminMetrics[]>('/admin/dashboard/metrics');
     return response.data;
+  },
+
+  listarGrupos: async () => {
+    const response = await api.get<{ id: string; nombre: string }[]>('/admin/grupos');
+    return conId(response.data) as GrupoDocument[];
+  },
+
+  crearGrupo: async (nombre: string) => {
+    const response = await api.post<{ id: string; nombre: string }>('/admin/grupos', { nombre });
+    return conId([response.data])[0] as GrupoDocument;
   },
 
   listarPacientes: async (page = 1, limit = 20) => {
@@ -117,15 +135,15 @@ export const adminService = {
     const response = await api.get<Sucursal[]>('/admin/sucursales', {
       params: incluirInactivas ? { incluir_inactivas: 'true' } : undefined,
     });
-    return response.data;
+    return conId(response.data as Array<{ id: string } & Partial<Sucursal>>) as Sucursal[];
   },
 
-  crearSucursal: async (data: { nombre_tienda: string; ciudad: string }) => {
+  crearSucursal: async (data: { nombre_tienda: string; ciudad: string; grupo_id: string }) => {
     const response = await api.post<Sucursal>('/admin/sucursales', data);
     return response.data;
   },
 
-  actualizarSucursal: async (id: string, data: { nombre_tienda: string; ciudad: string }) => {
+  actualizarSucursal: async (id: string, data: { nombre_tienda?: string; ciudad?: string; grupo_id?: string }) => {
     const response = await api.put<Sucursal>(`/admin/sucursales/${id}`, data);
     return response.data;
   },
@@ -142,15 +160,15 @@ export const adminService = {
 
   listarProductos: async () => {
     const response = await api.get<ProductoAdmin[]>('/admin/productos');
-    return response.data;
+    return conId(response.data as Array<{ id: string } & Partial<ProductoAdmin>>) as ProductoAdmin[];
   },
 
-  crearProducto: async (data: { nombre: string; descripcion?: string; tienda_id: string }) => {
+  crearProducto: async (data: { nombre: string; descripcion?: string; grupo_id?: string }) => {
     const response = await api.post<ProductoAdmin>('/admin/productos', data);
     return response.data;
   },
 
-  actualizarProducto: async (id: string, data: { nombre?: string; descripcion?: string; tienda_id?: string }) => {
+  actualizarProducto: async (id: string, data: { nombre?: string; descripcion?: string; grupo_id?: string }) => {
     const response = await api.put<ProductoAdmin>(`/admin/productos/${id}`, data);
     return response.data;
   },
@@ -162,7 +180,7 @@ export const adminService = {
 
   listarCodigos: async () => {
     const response = await api.get<CodigoActivacion[]>('/admin/codigos');
-    return response.data;
+    return conId(response.data as Array<{ id: string } & Partial<CodigoActivacion>>) as CodigoActivacion[];
   },
 
   crearCodigo: async (data: { codigo: string; producto_id: string; tienda_id: string }) => {

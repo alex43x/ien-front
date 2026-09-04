@@ -1,10 +1,21 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { useState, useEffect, type FormEvent } from "react";
+import { useNavigate, useLocation } from "react-router";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, Sparkles, UserRound } from "lucide-react";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import Footer from "../components/layout/Footer";
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const regState = (location.state as { codigo_activacion?: string }) || {};
+
+  // Si no hay código de activación validado, volver al paso 1
+  useEffect(() => {
+    if (!regState.codigo_activacion) {
+      navigate("/activar", { replace: true });
+    }
+  }, [regState.codigo_activacion, navigate]);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,12 +42,12 @@ export default function Register() {
       return;
     }
 
-    navigate("/activar", { state: { nombre: name, email, password } });
+    navigate("/horario", { state: { nombre: name, email, password, codigo_activacion: regState.codigo_activacion } });
   };
 
   return (
     <div
-      className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(217,160,48,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(77,170,160,0.16),_transparent_22%),var(--background)] p-4 sm:p-6 lg:p-8"
+      className="flex flex-col min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(217,160,48,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(77,170,160,0.16),_transparent_22%),var(--background)] p-4 sm:p-6 lg:p-8"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <div className="fixed top-4 right-4 z-50">
@@ -57,7 +68,7 @@ export default function Register() {
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
               <Sparkles size={12} className="text-[#FAEAB0]" />
-              Crea tu acceso
+              Paso 2 de 3
             </div>
             <h2 className="mt-6 font-['Lora'] text-4xl font-semibold leading-tight text-white">
               Únete al programa y empieza tu proceso con apoyo
@@ -88,7 +99,7 @@ export default function Register() {
 
             <div className="mb-8">
               <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
-                Registro
+                Paso 2 · Registro
               </div>
               <h1 className="font-['Lora'] text-3xl font-semibold text-foreground">Crea tu cuenta</h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -201,6 +212,7 @@ export default function Register() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

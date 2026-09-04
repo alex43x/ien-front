@@ -7,7 +7,12 @@ import TablaInfo from "@/components/ui/TablaInfo";
 import TablaCampo, { tablaCompleta } from "@/components/ui/TablaCampo";
 import { planService } from "../services/plan.service";
 import api from "../services/api";
+<<<<<<< HEAD
 import type { Leccion, CampoRespuesta } from "../types/api.types";
+=======
+import type { Leccion } from "../types/api.types";
+import Footer from "../components/layout/Footer";
+>>>>>>> cb80443af7d1bd49c70717be10c8d6734d4cc7f1
 
 export default function Lectura() {
   const navigate = useNavigate();
@@ -591,6 +596,7 @@ export default function Lectura() {
 
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

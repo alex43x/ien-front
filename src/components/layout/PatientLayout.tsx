@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from "react-router";
 import { LogOut, UserRound, ChevronDown, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import Footer from "./Footer";
 
 export default function PatientLayout() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function PatientLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-background" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       <header className="bg-card/80 backdrop-blur-md border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-50">
         <img src="/imports/logo_ien-03.png" alt="IEN" className="h-10 w-auto" />
 
@@ -88,6 +89,7 @@ export default function PatientLayout() {
       <main>
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { ChevronLeft, ArrowRight } from "lucide-react";
 import { BLOCKS } from "@/constants/program";
 import { useToneColors } from "@/hooks/useToneColors";
 import { planService } from "../services/plan.service";
+import Footer from "../components/layout/Footer";
 
 export default function BloqueIntro() {
   const navigate = useNavigate();
@@ -380,6 +381,8 @@ export default function BloqueIntro() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

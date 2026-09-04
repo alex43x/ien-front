@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { ArrowRight, ArrowLeft, Eye, EyeOff, KeyRound, CheckCircle, AlertTriangle } from "lucide-react";
 import { authService } from "../services/auth.service";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import Footer from "../components/layout/Footer";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -64,7 +65,8 @@ export default function ResetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -86,13 +88,16 @@ export default function ResetPassword() {
             </button>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -102,13 +107,16 @@ export default function ResetPassword() {
             <p className="mt-4 text-sm text-muted-foreground">Verificando enlace...</p>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -129,12 +137,15 @@ export default function ResetPassword() {
             </button>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
@@ -233,6 +244,8 @@ export default function ResetPassword() {
           </form>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }
