@@ -63,6 +63,13 @@ function renderValorCampo(campo: { id: string; valor: any; tipo: string }, toneC
       </div>
     );
   }
+  if (campo.valor !== null && typeof campo.valor === "object") {
+    return (
+      <pre className="rounded-xl p-3 text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap break-words" style={{ backgroundColor: grayFaint }}>
+        {JSON.stringify(campo.valor, null, 2)}
+      </pre>
+    );
+  }
   return <span className="text-sm text-muted-foreground">{String(campo.valor)}</span>;
 }
 

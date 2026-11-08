@@ -1,0 +1,40 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
+import { beforeEach, expect, test, vi } from 'vitest';
+import AdminSimulation from '../app/AdminSimulation';
+import { attemptsService } from '../services/attempts.service';
+import { ThemeProvider } from '../context/ThemeContext';
+vi.mock('../context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'admin' } }) }));
+vi.mock('../services/attempts.service', () => ({ attemptsService: { simulation: vi.fn(), moveSimulation: vi.fn() } }));
+const state = { dia_actual: 1, version: 0, leccion: null, simulacion: true } as const;
+const mount = () => render(<ThemeProvider><MemoryRouter><AdminSimulation /></MemoryRouter></ThemeProvider>);
+beforeEach(() => { vi.clearAllMocks(); vi.mocked(attemptsService.simulation).mockResolvedValue(state); });
+test('envía versión y limita avance/retroceso a 1–30', async () => {
+  const user = userEvent.setup(); mount();
+  expect(await screen.findByRole('button', { name: 'Retroceder' })).toBeDisabled();
+  vi.mocked(attemptsService.moveSimulation).mockResolvedValue({ ...state, dia_actual: 30, version: 1 });
+  await user.click(screen.getByRole('button', { name: 'Avanzar' }));
+  expect(attemptsService.moveSimulation).toHaveBeenCalledWith('avanzar', 0);
+  expect(screen.getByRole('button', { name: 'Avanzar' })).toBeDisabled();
+  await user.click(screen.getByRole('button', { name: 'Volver al día 1' }));
+  expect(attemptsService.moveSimulation).toHaveBeenLastCalledWith('reiniciar', 1);
+});
+test('409 recarga estado sin repetir el movimiento', async () => {
+  const user = userEvent.setup(); mount(); await screen.findByRole('button', { name: 'Avanzar' });
+  vi.mocked(attemptsService.moveSimulation).mockRejectedValue({ response: { status: 409 } });
+  vi.mocked(attemptsService.simulation).mockResolvedValue({ ...state, dia_actual: 7, version: 8 });
+  await user.click(screen.getByRole('button', { name: 'Avanzar' }));
+  expect(await screen.findByText('Día 7 de 30')).toBeVisible();
+  expect(attemptsService.moveSimulation).toHaveBeenCalledTimes(1);
+  expect(screen.getByText(/cambió en otra pestaña/)).toBeVisible();
+});
+test('la lectura simulada no crea borradores del paciente', async () => {
+  vi.mocked(attemptsService.simulation).mockResolvedValue({ ...state, leccion: { dia_actual: 1, titulo: 'Prueba', tipo: 'lectura', emociones_objetivo: [], respuesta_tipo: 'texto', campos_respuesta: [{ id: 'text', etiqueta: 'Respuesta simulada', tipo: 'texto' }], datos_leccion: { ejercicio: { nombre: 'Prueba', instruccion: 'Responde' } } } });
+  vi.mocked(attemptsService.moveSimulation).mockResolvedValue({ ...state, dia_actual: 2, version: 1 });
+  const user = userEvent.setup(); mount();
+  await user.type(await screen.findByRole('textbox', { name: 'Respuesta simulada' }), 'Solo una prueba');
+  expect(Object.keys(localStorage).some(key => key.includes('activity-draft'))).toBe(false);
+  await user.click(screen.getByRole('button', { name: 'Completar actividad' }));
+  expect(attemptsService.moveSimulation).toHaveBeenCalledWith('avanzar', 0);
+});

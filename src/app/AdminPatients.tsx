@@ -22,9 +22,10 @@ export default function AdminPatients() {
   const limit = 20;
 
   useEffect(() => {
+    if (search.trim() === query) return;
     const timer = setTimeout(() => { setQuery(search.trim()); setPage(1); }, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, query]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -52,6 +53,8 @@ export default function AdminPatients() {
     if (plan?.estado === "activo") return { bg: green.bg, text: green.text, label: "Activo" };
     if (plan?.estado === "completado") return { bg: yellow.bg, text: yellow.text, label: "Completado" };
     if (plan?.estado === "abandonado") return { bg: gray.light, text: gray.base, label: "Abandonado" };
+    if (plan?.estado === "pendiente") return { bg: yellow.bg, text: yellow.text, label: "Pendiente" };
+    if (plan?.estado === "reiniciado") return { bg: gray.light, text: gray.base, label: "Reiniciado" };
     return { bg: red.bg, text: red.text, label: "Sin plan" };
   };
 

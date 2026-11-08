@@ -8,6 +8,8 @@ import {
   BienvenidaResponse,
   TestInicialResponse,
   DiasPlanResponse,
+  ActivityContext,
+  PlanEstado,
 } from '../types/api.types';
 
 export const planService = {
@@ -31,18 +33,18 @@ export const planService = {
     return response.data;
   },
 
-  completeDay: async (respuesta_usuario?: { id: string; valor: any; tipo: string }[]) => {
-    const response = await api.post<CompleteDayResponse>('/plan/complete-day', { respuesta_usuario });
+  completeDay: async (context: ActivityContext, respuesta_usuario?: { id: string; valor: any; tipo: string }[]) => {
+    const response = await api.post<CompleteDayResponse>('/plan/complete-day', { ...context, respuesta_usuario });
     return response.data;
   },
 
-  advanceDay: async () => {
-    const response = await api.post<CompleteDayResponse>('/plan/testing/advance');
+  activateAttempt: async (planId: string) => {
+    const response = await api.post<{ plan_id: string; estado: PlanEstado }>(`/plan/intentos/${planId}/activar`);
     return response.data;
   },
 
-  retreatDay: async () => {
-    const response = await api.post<CompleteDayResponse>('/plan/testing/retreat');
+  continueAttempt: async () => {
+    const response = await api.post<{ plan_id: string; estado: PlanEstado }>('/plan/intentos/continuar');
     return response.data;
   },
 

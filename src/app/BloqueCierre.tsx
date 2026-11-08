@@ -7,8 +7,11 @@ import { planService } from "../services/plan.service";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../context/AuthContext";
 import { activityDraftKey, removeActivityDraft } from "../services/activityDraft";
+import type { ActivityContext } from "../types/api.types";
+import { errorMessage } from "../utils/errors";
 
 interface BloqueCierreState {
+  context: ActivityContext;
   diaActual: number;
   conclusion: string;
   respuesta_usuario?: { id: string; valor: any; tipo: string }[];
@@ -22,7 +25,9 @@ export default function BloqueCierre() {
   const [scrollPct, setScrollPct] = useState(0);
   const [noScrollNeeded, setNoScrollNeeded] = useState(false);
   const [completando, setCompletando] = useState(false);
+  const submissionLock = useRef(false);
   const [error, setError] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const diaActual = navState?.diaActual ?? 5;
@@ -34,7 +39,7 @@ export default function BloqueCierre() {
 
   // Redirigir si no hay datos
   useEffect(() => {
-    if (!navState?.conclusion) {
+    if (!navState?.conclusion || !navState.context?.plan_id || navState.context.dia_actual !== navState.diaActual) {
       navigate("/lectura", { replace: true });
     }
   }, []);
@@ -59,17 +64,21 @@ export default function BloqueCierre() {
   const canContinue = noScrollNeeded || scrollPct >= 80;
 
   const handleComplete = async () => {
-    if (completando) return;
+    if (submissionLock.current || completando || conflict || !navState?.context?.plan_id || navState.context.dia_actual !== diaActual) return;
+    submissionLock.current = true;
     setCompletando(true);
     setError(null);
     try {
-      await planService.completeDay(respuesta_usuario);
-      if (user) removeActivityDraft(activityDraftKey(user.id, diaActual));
+      await planService.completeDay(navState.context, respuesta_usuario);
+      if (user) removeActivityDraft(activityDraftKey(user.id, navState.context.plan_id, navState.context.dia_actual));
       navigate("/dashboard", { replace: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al completar el día:", err);
-      setError("Ocurrió un error al guardar tu progreso. Inténtalo de nuevo.");
+      const changed = err.response?.status === 409;
+      setConflict(changed);
+      setError(changed ? "La actividad cambió. Tu borrador se conserva. Actualiza la actividad antes de continuar." : errorMessage(err, "Ocurrió un error al guardar tu progreso. Tus respuestas se conservan."));
     } finally {
+      submissionLock.current = false;
       setCompletando(false);
     }
   };
@@ -178,6 +187,7 @@ export default function BloqueCierre() {
 
           {/* CTA */}
           <div className="sticky bottom-0 pb-6">
+            {(conflict || error) && <button onClick={() => navigate('/lectura', { replace: true })} className="mb-3 rounded-xl border border-border px-4 py-2 text-sm">{conflict ? 'Actualizar actividad' : 'Volver a mis respuestas'}</button>}
             {error && (
               <p className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive mb-3">
                 {error}
@@ -191,7 +201,7 @@ export default function BloqueCierre() {
               }`}
             >
               <button
-                disabled={!canContinue || completando}
+                disabled={!canContinue || completando || conflict || !navState?.context?.plan_id}
                 onClick={handleComplete}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-background transition-all hover:opacity-90 disabled:cursor-not-allowed shadow-lg"
                 style={{ backgroundColor: tone.text, color: tone.bg }}

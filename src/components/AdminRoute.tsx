@@ -21,7 +21,7 @@ export default function AdminRoute() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (user?.rol === 'moderador_tienda' && !['/admin', '/admin/productos', '/admin/codigos'].includes(pathname)) {
+  if (user?.rol === 'moderador_tienda' && !['/admin', '/admin/productos', '/admin/codigos', '/admin/simulacion'].includes(pathname)) {
     return <Navigate to="/admin/productos" replace />;
   }
   if (user?.rol !== 'admin_general' && ['/admin/grupos', '/admin/plantillas'].includes(pathname)) {

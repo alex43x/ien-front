@@ -18,6 +18,7 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 import Footer from "./Footer";
 
 const NAV_ITEMS = [
+  { label: "Simular programa", path: "/admin/simulacion", icon: Layers, roles: ['admin_general', 'admin_negocio', 'moderador_tienda'] as string[] },
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard, roles: ['admin_general', 'admin_negocio'] as string[] },
   { label: "Pacientes", path: "/admin/pacientes", icon: Users, roles: ['admin_general', 'admin_negocio'] as string[] },
   { label: "Reportes", path: "/admin/reportes", icon: BarChart3, roles: ['admin_general', 'admin_negocio'] as string[] },

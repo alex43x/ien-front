@@ -5,6 +5,7 @@ const Dashboard = lazy(() => import("./Dashboard"));
 const AdminDashboard = lazy(() => import("./AdminDashboard"));
 const AdminPatients = lazy(() => import("./AdminPatients"));
 const AdminPatientDetail = lazy(() => import("./AdminPatientDetail"));
+const AdminSimulation = lazy(() => import("./AdminSimulation"));
 const AdminReports = lazy(() => import("./AdminReports"));
 const AdminStores = lazy(() => import("./AdminStores"));
 const AdminProducts = lazy(() => import("./AdminProducts"));
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
               { path: "/admin/dashboard", element: <AdminDashboard /> },
               { path: "/admin/pacientes", element: <AdminPatients /> },
               { path: "/admin/pacientes/:id", element: <AdminPatientDetail /> },
+              { path: "/admin/simulacion", element: <AdminSimulation /> },
               { path: "/admin/reportes", element: <AdminReports /> },
               { path: "/admin/sucursales", element: <AdminStores /> },
               { path: "/admin/productos", element: <AdminProducts /> },

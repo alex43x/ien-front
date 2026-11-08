@@ -11,10 +11,10 @@ async function authenticated(page: Page, role = "usuario") {
     let status = 200;
     if (path === "/api/auth/profile") body = { id: "test-patient", nombre: "Paciente de prueba", email: "test@example.com", rol: role };
     else if (path === "/api/plan/today") body = {
-      dia_actual: 1, cabecera: null, conclusion: null, contenido_especial: null,
+      plan_id: "plan-a", dia_actual: 1, cabecera: null, conclusion: null, contenido_especial: null,
       leccion: { dia_actual: 1, titulo: "Actividad de prueba", tipo: "lectura", campos_respuesta: [{ id: "respuesta", tipo: "texto", etiqueta: "¿Cómo te sientes?" }], datos_leccion: { concepto: "Escucha tus emociones", ejercicio: { nombre: "Reflexión", instruccion: "Escribe o dicta tu respuesta." }, suplementacion: [{ nombre: "Magnesio", dosis: "Dosis de prueba", horario: "Noche", beneficio: "Descanso" }] } },
     };
-    else if (path === "/api/plan/profile") body = { dia_actual: 1, fecha_inicio: "2026-10-01T00:00:00.000Z", estado: "activo", dias_completados: 0, dias_totales: 30, racha_dias: 0, racha_maxima: 0, actividad_completada_hoy: false };
+    else if (path === "/api/plan/profile") body = { plan_id: "plan-a", dia_actual: 1, fecha_inicio: "2026-10-01T00:00:00.000Z", estado: "activo", dias_completados: 0, dias_totales: 30, racha_dias: 0, racha_maxima: 0, actividad_completada_hoy: false };
     else if (path === "/api/admin/productos") {
       if (route.request().method() === "POST") { status = 400; body = { error: "No se pudo guardar el producto de prueba" }; }
       else body = [];

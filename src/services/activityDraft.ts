@@ -6,8 +6,8 @@ export interface ActivityDraft {
   scrollTop: number;
 }
 
-export function activityDraftKey(userId: string, day: number) {
-  return `ien:activity-draft:v1:${userId}:${day}`;
+export function activityDraftKey(userId: string, planId: string, day: number) {
+  return `ien:activity-draft:v2:${userId}:${planId}:${day}`;
 }
 
 export function lessonSignature(lesson: Leccion) {

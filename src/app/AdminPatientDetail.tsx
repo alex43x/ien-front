@@ -8,8 +8,9 @@ import ErrorNotice from "../components/ui/ErrorNotice";
 import { errorMessage } from "../utils/errors";
 import TestInicialResultados from "../components/TestInicialResultados";
 import ActividadesDiariasLista from "../components/ActividadesDiariasLista";
+import AttemptHistory from "../components/AttemptHistory";
 
-type Tab = "progreso" | "test" | "actividades";
+type Tab = "progreso" | "test" | "actividades" | "historial";
 
 export default function AdminPatientDetail() {
   const { id } = useParams<{ id: string }>();
@@ -102,6 +103,8 @@ export default function AdminPatientDetail() {
     if (estado === "activo") return { bg: C.green.bg, text: C.green.text, border: C.green.border, label: "Activo" };
     if (estado === "completado") return { bg: C.yellow.bg, text: C.yellow.text, border: C.yellow.border, label: "Completado" };
     if (estado === "abandonado") return { bg: C.red.bg, text: C.red.text, border: C.red.border, label: "Abandonado" };
+    if (estado === "pendiente") return { bg: C.yellow.bg, text: C.yellow.text, border: C.yellow.border, label: "Pendiente" };
+    if (estado === "reiniciado") return { bg: GRAY.light, text: GRAY.base, border: GRAY.mid, label: "Reiniciado" };
     if (estado === "sin_iniciar") return { bg: GRAY.light, text: GRAY.base, border: GRAY.mid, label: "Sin iniciar" };
     return { bg: GRAY.light, text: GRAY.base, border: GRAY.mid, label: estado };
   };
@@ -196,11 +199,12 @@ export default function AdminPatientDetail() {
             })}
           </div>
 
-          <div className="bg-card rounded-3xl border border-border p-2 flex gap-1">
+          <div className="bg-card rounded-3xl border border-border p-2 grid grid-cols-2 sm:grid-cols-4 gap-1">
             {([
               { key: "progreso" as Tab, label: "Progreso" },
               { key: "test" as Tab, label: "Test Inicial" },
               { key: "actividades" as Tab, label: "Actividades Diarias" },
+              { key: "historial" as Tab, label: "Historial de intentos" },
             ]).map((tab) => (
               <button
                 key={tab.key}
@@ -315,6 +319,10 @@ export default function AdminPatientDetail() {
                 <ActividadesDiariasLista dias={actividades} />
               )}
             </div>
+          )}
+
+          {activeTab === "historial" && id && (
+            <AttemptHistory key={id} userId={id} />
           )}
         </>
       )}

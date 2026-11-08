@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
 import {
@@ -17,6 +17,8 @@ import { useToneColors, useGray, type GrayColors } from "../hooks/useToneColors"
 import type { Leccion, PlanProfileResponse, TestInicialResponse, DiaPlan, BienvenidaResponse } from "../types/api.types";
 import { useAuth } from "../context/AuthContext";
 import { useLocalDraft } from "../hooks/useLocalDraft";
+import { errorMessage } from "../utils/errors";
+import { useSubmission } from "../hooks/useSubmission";
 import ErrorNotice from "../components/ui/ErrorNotice";
 
 const SUPPLEMENT_ICONS: Record<string, any> = {
@@ -138,13 +140,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [retry, setRetry] = useState(0);
-  const canTestPlan = user?.rol === 'admin_general' || user?.rol === 'admin_negocio';
+  const historyVersion = useRef(0);
+  const activation = useSubmission();
+  const [activationError, setActivationError] = useState("");
 
   const [leccion, setLeccion] = useState<Leccion | null>(null);
   const [profile, setProfile] = useState<PlanProfileResponse | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
   const [planError, setPlanError] = useState<string | null>(null);
-  const [hitoAlcanzado, setHitoAlcanzado] = useState<number | null>(null);
+  const [hitoAlcanzado] = useState<number | null>(null);
   
   const [bienvenidaOpen, setBienvenidaOpen] = useState(false);
   const [bienvenidaData, setBienvenidaData] = useState<BienvenidaResponse | null>(null);
@@ -167,21 +171,28 @@ export default function Dashboard() {
 
 
   useEffect(() => {
+    let active = true;
+    historyVersion.current++;
+    setActividades([]); setActividadesOpen(false); setActividadesLoading(false);
+    setTestInicial(null); setTestOpen(false); setTestLoading(false);
     const load = async () => {
+      let profileFound = false;
       try {
         setPlanLoading(true);
         setPlanError(null);
-        const [todayData, profileData] = await Promise.all([
-          planService.getTodayPlan(),
-          planService.getProfile(),
-        ]);
-        setLeccion(todayData.leccion);
+        const profileData = await planService.getProfile();
+        profileFound = true;
+        const todayData = profileData.estado === 'activo' ? await planService.getTodayPlan() : null;
+        if (!active) return;
+        setLeccion(todayData?.leccion ?? null);
         setProfile(profileData);
       } catch (err: any) {
-        if (err.response?.status === 404) {
+        if (!active) return;
+        if (!profileFound && err.response?.status === 404) {
           setPlanError("no_plan");
           try {
             const data = await planService.getBienvenida();
+            if (!active) return;
             setBienvenidaData(data);
             setBienvenidaOpen(true);
           } catch (e) {
@@ -191,37 +202,42 @@ export default function Dashboard() {
           setPlanError("error");
         }
       } finally {
-        setPlanLoading(false);
+        if (active) setPlanLoading(false);
       }
     };
     load();
+    return () => { active = false; historyVersion.current++; };
   }, [retry]);
 
   const loadTestInicial = async () => {
     if (testInicial || testLoading) return;
+    const version = historyVersion.current;
     setTestLoading(true);
     setTestError(false);
     try {
       const data = await planService.getTestInicial();
+      if (version !== historyVersion.current) return;
       setTestInicial(data);
     } catch (_) {
-      setTestError(true);
+      if (version === historyVersion.current) setTestError(true);
     } finally {
-      setTestLoading(false);
+      if (version === historyVersion.current) setTestLoading(false);
     }
   };
 
   const loadActividades = async () => {
     if (actividades.length > 0 || actividadesLoading) return;
+    const version = historyVersion.current;
     setActividadesLoading(true);
     setActividadesError(false);
     try {
       const data = await planService.getDays(true);
+      if (version !== historyVersion.current) return;
       setActividades(data.dias);
     } catch (_) {
-      setActividadesError(true);
+      if (version === historyVersion.current) setActividadesError(true);
     } finally {
-      setActividadesLoading(false);
+      if (version === historyVersion.current) setActividadesLoading(false);
     }
   };
 
@@ -243,48 +259,6 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
-      {canTestPlan && <div className="flex justify-end gap-2">
-        <button
-          onClick={async () => {
-            try {
-              await planService.retreatDay();
-              const [todayPlan, profileData] = await Promise.all([
-                planService.getTodayPlan(),
-                planService.getProfile()
-              ]);
-              setLeccion(todayPlan.leccion);
-              setProfile(profileData);
-              setHitoAlcanzado(null);
-            } catch (error) {
-              console.error("Error retreating day:", error);
-            }
-          }}
-          title="Retroceder día"
-          className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-orange-600 hover:bg-orange-700 transition-all"
-        >
-          RETROCEDER
-        </button>
-        <button
-          onClick={async () => {
-            try {
-              await planService.advanceDay();
-              const [todayPlan, profileData] = await Promise.all([
-                planService.getTodayPlan(),
-                planService.getProfile()
-              ]);
-              setLeccion(todayPlan.leccion);
-              setProfile(profileData);
-              setHitoAlcanzado(null);
-            } catch (error) {
-              console.error("Error advancing day:", error);
-            }
-          }}
-          title="Avanzar día"
-          className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all"
-        >
-          AVANZAR DÍA
-        </button>
-      </div>}
       {/* ── Estado del plan ── */}
       {profile && !planLoading && (
         <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
@@ -297,7 +271,7 @@ export default function Dashboard() {
                 backgroundColor: profile.estado === 'activo' ? greenTone.bg :
                   profile.estado === 'completado' ? yellowTone.soft : redTone.bg,
               }}>
-              {profile.estado === 'activo' ? 'Activo' : profile.estado === 'completado' ? 'Completado' : 'Abandonado'}
+              {{ activo: 'Activo', completado: 'Completado', pendiente: 'Pendiente', reiniciado: 'Reiniciado', abandonado: 'Abandonado' }[profile.estado]}
             </span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -362,6 +336,27 @@ export default function Dashboard() {
             </div>
           ) : planError === 'error' ? (
             <ErrorNotice message="No se pudo cargar tu programa." onRetry={() => setRetry(n => n + 1)} />
+          ) : profile && ['pendiente', 'reiniciado', 'abandonado'].includes(profile.estado) ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8 text-center">
+              <BookOpen size={28} style={{ color: tone.color }} />
+              <p className="font-['Lora'] text-base font-semibold text-foreground">Un nuevo comienzo</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">Tu intento anterior y sus respuestas se conservan. Puedes comenzar de nuevo cuando estés listo.</p>
+              {activationError && <p role="alert" className="text-xs text-destructive">{activationError}</p>}
+              <button disabled={activation.pending} onClick={() => activation.submit(async () => {
+                setActivationError("");
+                try {
+                  if (profile.estado === 'pendiente') await planService.activateAttempt(profile.plan_id);
+                  else await planService.continueAttempt();
+                  historyVersion.current++;
+                  setRetry(n => n + 1);
+                } catch (err: any) {
+                  setActivationError(err.response?.status === 403 ? 'La tienda asociada no está activa. Contacta con tu administrador.' : errorMessage(err));
+                  if ([404, 409].includes(err.response?.status)) setRetry(n => n + 1);
+                }
+              })} className="mt-1 px-5 py-2.5 rounded-xl text-xs font-semibold shadow-sm hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: tone.text, color: tone.bg }}>
+                {activation.pending ? 'Comenzando…' : 'Comenzar nuevo intento'}
+              </button>
+            </div>
           ) : profile?.estado === 'completado' ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 py-8 text-center">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: greenTone.soft }}>

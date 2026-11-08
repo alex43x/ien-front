@@ -8,13 +8,14 @@ import TablaCampo, { tablaCompleta } from "@/components/ui/TablaCampo";
 import RespuestaConVoz from "@/components/ui/RespuestaConVoz";
 import { planService } from "../services/plan.service";
 import api from "../services/api";
-import type { Leccion, CampoRespuesta } from "../types/api.types";
+import type { Leccion, CampoRespuesta, ActivityContext } from "../types/api.types";
+import { errorMessage } from "../utils/errors";
 import Footer from "../components/layout/Footer";
 import { useAuth } from "../context/AuthContext";
 import { activityDraftKey, lessonSignature, readActivityDraft, saveActivityDraft, removeActivityDraft, type ActivityDraft } from "../services/activityDraft";
 
 
-export default function Lectura() {
+export default function Lectura({ simulation }: { simulation?: { leccion: Leccion; onComplete: () => Promise<void>; disabled: boolean } }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -23,6 +24,8 @@ export default function Lectura() {
   const readOnly = !!diaNumero || completedView;
   const navState = location.state as { leccion?: Leccion; savedAnswers?: { id: string; valor: any; tipo: string }[]; returnTo?: string } | null;
   const returnTo = navState?.returnTo || "/dashboard";
+  const [context, setContext] = useState<ActivityContext | null>(null);
+  const [conflict, setConflict] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const [leccion, setLeccion] = useState<Leccion | null>(null);
   const [conclusion, setConclusion] = useState<string | null>(null);
@@ -30,6 +33,7 @@ export default function Lectura() {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [savedAnswers, setSavedAnswers] = useState<{ id: string; valor: any; tipo: string }[]>([]);
   const [completando, setCompletando] = useState(false);
+  const submissionLock = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -38,6 +42,7 @@ export default function Lectura() {
   const draftRef = useRef<{ key: string; data: ActivityDraft } | null>(null);
   const [draftStatus, setDraftStatus] = useState<"saved" | "error" | null>(null);
   const tone = useToneColors("green");
+  const isSimulation = Boolean(simulation);
 
   const persistDraft = () => {
     const draft = draftRef.current;
@@ -58,8 +63,9 @@ export default function Lectura() {
   // Scroll progress
   useEffect(() => {
     if (readOnly) return;
-    const el = contentRef.current;
-    if (!el) return;
+    const content = contentRef.current;
+    if (!content) return;
+    const el = isSimulation ? content.closest("main") ?? content : content;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const flush = () => {
       if (timer) clearTimeout(timer);
@@ -76,7 +82,7 @@ export default function Lectura() {
         timer = setTimeout(persistDraft, 300);
       }
     };
-    el.scrollTop = draftRef.current?.data.scrollTop ?? 0;
+    if (!isSimulation) el.scrollTop = draftRef.current?.data.scrollTop ?? 0;
     onScroll();
     el.addEventListener("scroll", onScroll);
     window.addEventListener("pagehide", flush);
@@ -85,7 +91,7 @@ export default function Lectura() {
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [loading, readOnly]);
+  }, [loading, readOnly, isSimulation]);
 
   // Load lesson from API
   useEffect(() => {
@@ -93,12 +99,22 @@ export default function Lectura() {
     const loadLesson = async () => {
       try {
         setLoading(true);
+        setContext(null);
+        setLeccion(null);
+        setError(null);
+        setConflict(false);
+        setDraftStatus(null);
         setLoadError(false);
         setCompletedView(false);
         setSavedAnswers([]);
         setAnswers({});
         setConclusion(null);
         draftRef.current = null;
+
+        if (simulation) {
+          setLeccion(simulation.leccion);
+          return;
+        }
 
         if (diaNumero) {
           if (navState?.leccion) {
@@ -134,8 +150,10 @@ export default function Lectura() {
         const todayData = await planService.getTodayPlan();
         if (!active) return;
         if (todayData.leccion) {
+          if (!todayData.plan_id || !Number.isInteger(todayData.dia_actual)) throw new Error('Actividad sin contexto');
+          setContext({ plan_id: todayData.plan_id, dia_actual: todayData.dia_actual });
           if (user) {
-            const key = activityDraftKey(user.id, todayData.leccion.dia_actual);
+            const key = activityDraftKey(user.id, todayData.plan_id, todayData.dia_actual);
             const signature = lessonSignature(todayData.leccion);
             const draft = readActivityDraft(key, signature);
             draftRef.current = {
@@ -147,7 +165,7 @@ export default function Lectura() {
           }
           setLeccion(todayData.leccion);
           setConclusion(todayData.conclusion ?? null);
-        } else {
+        } else if (!todayData.estado || todayData.estado === 'activo' || todayData.estado === 'completado') {
           // Si ya se completó hoy, la lección viene como null en /today.
           // La buscamos en el historial completo de días para que el usuario pueda releerla.
           const response = await api.get('/plan/days');
@@ -177,10 +195,10 @@ export default function Lectura() {
     };
     loadLesson();
     return () => { active = false; };
-  }, [diaNumero, user?.id, retry]);
+  }, [diaNumero, user?.id, retry, simulation?.leccion]);
 
   const handleComplete = async () => {
-    if (completando || !leccion) return;
+    if (submissionLock.current || completando || !leccion || conflict || (simulation ? simulation.disabled : !context)) return;
 
     if (leccion.campos_respuesta && leccion.campos_respuesta.length > 0) {
       const faltan = leccion.campos_respuesta.filter(c => {
@@ -196,9 +214,14 @@ export default function Lectura() {
       }
     }
 
+    submissionLock.current = true;
     setCompletando(true);
     setError(null);
     try {
+      if (simulation) {
+        await simulation.onComplete();
+        return;
+      }
       const respuesta_usuario = leccion.campos_respuesta?.length
         ? leccion.campos_respuesta.map(c => ({
           id: c.id,
@@ -214,21 +237,25 @@ export default function Lectura() {
             diaActual: leccion.dia_actual,
             conclusion,
             respuesta_usuario,
+            context,
           },
         });
         return;
       }
 
-      await planService.completeDay(respuesta_usuario);
+      await planService.completeDay(context!, respuesta_usuario);
       if (draftRef.current) {
         removeActivityDraft(draftRef.current.key);
         draftRef.current = null;
       }
       navigate(returnTo);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al completar actividad:", err);
-      setError("No se pudo completar la actividad. Tus respuestas se conservan; inténtalo de nuevo.");
+      const changed = err.response?.status === 409;
+      setConflict(changed);
+      setError(changed ? "La actividad cambió. Tu borrador se conserva en este navegador. Actualiza la vista antes de continuar." : errorMessage(err, "No se pudo completar la actividad. Tus respuestas se conservan; inténtalo de nuevo."));
     } finally {
+      submissionLock.current = false;
       setCompletando(false);
     }
   };
@@ -368,7 +395,7 @@ export default function Lectura() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className={`flex items-center justify-center bg-background ${isSimulation ? "py-10" : "h-screen"}`}>
         <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
       </div>
     );
@@ -386,11 +413,12 @@ export default function Lectura() {
     );
   }
 
+  const LessonHeading = isSimulation ? "h2" : "h1";
   return (
-    <div className="h-dvh flex flex-col bg-background" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className={isSimulation ? undefined : "h-dvh flex flex-col bg-background"} style={{ fontFamily: "'Inter', sans-serif" }}>
 
       {/* Header */}
-      <header className="bg-card border-b border-border px-5 py-3 flex items-center gap-4 flex-shrink-0">
+      {!isSimulation && <header className="bg-card border-b border-border px-5 py-3 flex items-center gap-4 flex-shrink-0">
         <button aria-label="Volver" onClick={() => navigate(returnTo)} className="text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft size={20} />
         </button>
@@ -405,18 +433,18 @@ export default function Lectura() {
           </div>
           <p className="text-sm font-semibold text-foreground truncate mt-0.5">{leccion.titulo}</p>
         </div>
-      </header>
+      </header>}
 
       {/* Progress bar */}
-      {!readOnly && (
+      {!readOnly && !isSimulation && (
         <div className="h-1 bg-secondary flex-shrink-0">
           <div className="h-full transition-all duration-300" style={{ width: `${scrollPct}%`, backgroundColor: tone.color }} />
         </div>
       )}
 
       {/* Reading content */}
-      <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-5 py-8">
+      <div ref={contentRef} className={isSimulation ? undefined : "min-h-0 flex-1 overflow-y-auto"}>
+        <div className={isSimulation ? "pt-2" : "max-w-2xl mx-auto px-5 py-8"}>
 
           {/* Intro badge */}
           <div className="flex items-center gap-2 mb-6">
@@ -429,9 +457,9 @@ export default function Lectura() {
           </div>
 
           {/* Title */}
-          <h1 className="font-['Lora'] text-3xl font-semibold text-foreground leading-tight mb-6">
+          <LessonHeading className="font-['Lora'] text-3xl font-semibold text-foreground leading-tight mb-6">
             {leccion.titulo}
-          </h1>
+          </LessonHeading>
 
           {/* Concepto / Cita */}
           {leccion.datos_leccion?.concepto && (
@@ -639,7 +667,8 @@ export default function Lectura() {
 
           {/* CTA */}
           {!readOnly && (
-            <div className="sticky bottom-0 pb-6 mt-8">
+            <div className={isSimulation ? "mt-8" : "sticky bottom-0 pb-6 mt-8"}>
+              {conflict && <button onClick={() => setRetry(n => n + 1)} className="mb-3 rounded-xl border border-border px-4 py-2 text-sm">Actualizar actividad</button>}
               {error && (
                 <p className="rounded-xl bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive mb-3">
                   {error}
@@ -647,7 +676,7 @@ export default function Lectura() {
               )}
               <div className={`transition-all duration-500 ${canContinue ? "opacity-100 translate-y-0" : "opacity-40 translate-y-2"}`}>
                 <button
-                  disabled={!canContinue || completando}
+                  disabled={!canContinue || completando || conflict || (simulation ? simulation.disabled : !context)}
                   onClick={handleComplete}
                   className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-semibold text-background transition-all hover:opacity-90 disabled:cursor-not-allowed shadow-lg"
                   style={{ backgroundColor: tone.text, color: tone.bg }}>
@@ -669,7 +698,7 @@ export default function Lectura() {
 
         </div>
       </div>
-      <Footer />
+      {!isSimulation && <Footer />}
     </div>
   );
 }

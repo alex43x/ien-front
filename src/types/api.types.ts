@@ -164,20 +164,26 @@ export interface ResponderDiaResponse {
   fecha: string;
 }
 
-export interface TodayPlanResponse {
+export type PlanEstado = 'pendiente' | 'activo' | 'completado' | 'reiniciado' | 'abandonado';
+export interface ActivityContext { plan_id: string; dia_actual: number }
+
+export interface TodayPlanResponse extends ActivityContext {
+  estado?: PlanEstado;
   dia_actual: number;
   completado?: boolean;
   cabecera: string | null;
-  conclusion: string | null;
+  conclusion?: string | null;
   contenido_especial: { tipo: string; titulo: string; contenido: any } | null;
   leccion: Leccion | null;
 }
 
 export interface PlanProfileResponse {
+  plan_id: string;
+  numero_intento?: number;
   dia_actual: number;
   racha_dias: number;
   racha_maxima: number;
-  estado: 'activo' | 'completado' | 'abandonado';
+  estado: PlanEstado;
   actividad_completada_hoy: boolean;
   fecha_inicio: string;
   dias_completados: number;
@@ -185,6 +191,7 @@ export interface PlanProfileResponse {
 }
 
 export interface CompleteDayResponse {
+  conclusion?: string | null;
   dia_completado: number;
   dia_actual: number;
   racha_dias: number;
@@ -231,7 +238,7 @@ export interface PerfilPaciente {
 }
 
 export interface ProgresoPaciente {
-  estado: 'activo' | 'completado' | 'abandonado' | 'sin_iniciar';
+  estado: PlanEstado | 'sin_iniciar';
   dia_actual: number;
   racha_dias: number;
   racha_maxima: number;
