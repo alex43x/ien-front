@@ -28,3 +28,16 @@ export function linksSuplemento(nombre: string): { nombre: string; url: string }
 
   return [...links.values()];
 }
+
+export function separarSuplementos<T extends { nombre: string }>(lista: T[]): T[] {
+  return lista.flatMap((sup) =>
+    sup.nombre.split("+")
+      .map((parte) => parte.trim())
+      .filter(Boolean)
+      .map((nombre) => nombre === sup.nombre ? sup : { ...sup, nombre })
+  );
+}
+
+export function urlSuplemento(nombre: string): string | undefined {
+  return linksSuplemento(nombre)[0]?.url;
+}

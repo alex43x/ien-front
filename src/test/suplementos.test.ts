@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { linksSuplemento } from "../constants/suplementos";
+import { linksSuplemento, separarSuplementos, urlSuplemento } from "../constants/suplementos";
 
 const tienda = "https://www.vitaminshoppeparaguay.com.py/products/";
 
@@ -19,4 +19,24 @@ test.each([
   ["CoQ10 + Coenzima Q10", [["CoQ10", "coq-10-100-mg-30-capsulas-blandas"]]],
 ] satisfies [string, [string, string][]][])("resuelve los enlaces de %s", (entrada, productos) => {
   expect(linksSuplemento(entrada)).toEqual(productos.map(([nombre, ruta]) => ({ nombre, url: tienda + ruta })));
+});
+
+const datos = { dosis: "1", horario: "Mañana", beneficio: "x" };
+
+test("separa las combinaciones conservando los datos de cada suplemento", () => {
+  expect(separarSuplementos([{ ...datos, nombre: "Complejo B + Ashwagandha" }])).toEqual([
+    { ...datos, nombre: "Complejo B" },
+    { ...datos, nombre: "Ashwagandha" },
+  ]);
+});
+
+test("conserva un suplemento individual y descarta partes vacías", () => {
+  const suplemento = { ...datos, nombre: "Ashwagandha" };
+  expect(separarSuplementos([suplemento])).toEqual([suplemento]);
+  expect(separarSuplementos([{ ...datos, nombre: "+ Ashwagandha + " }])).toEqual([suplemento]);
+});
+
+test("devuelve la URL de compra solo cuando hay un producto asociado", () => {
+  expect(urlSuplemento("Ashwagandha")).toBe(tienda + "ashwagandha-extract-60-capsulas");
+  expect(urlSuplemento("Melatonina")).toBeUndefined();
 });

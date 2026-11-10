@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { ChevronLeft, ChevronDown, ChevronUp, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator, ExternalLink } from "lucide-react";
-import { linksSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
+import { ChevronLeft, ChevronDown, ChevronUp, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator } from "lucide-react";
+import { separarSuplementos, urlSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
 import { useToneColors } from "@/hooks/useToneColors";
 import Secciones from "@/components/ui/Secciones";
 import TablaInfo from "@/components/ui/TablaInfo";
@@ -617,9 +617,19 @@ export default function Lectura() {
               </p>
               <p className="text-[10px] text-muted-foreground mb-4">{TEXTO_COMPRA_SUPLEMENTOS}</p>
               <div className="space-y-3">
-                {leccion.datos_leccion.suplementacion.map((sup, idx: number) => {
+                {separarSuplementos(leccion.datos_leccion.suplementacion).map((sup, idx: number) => {
+                  const url = urlSuplemento(sup.nombre);
+                  const Tarjeta = url ? "a" : "div";
                   return (
-                    <div key={idx} className="flex items-start gap-3 p-3 rounded-xl" style={{ backgroundColor: tone.bg }}>
+                    <Tarjeta key={idx}
+                      className={`flex items-start gap-3 p-3 rounded-xl${url ? " cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0" : ""}`}
+                      style={{ backgroundColor: tone.bg }}
+                      {...(url ? {
+                        href: url,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        "aria-label": `Comprar ${sup.nombre} en The Vitamin Shoppe Paraguay (se abre en otra pestaña)`,
+                      } : {})}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: tone.soft }}>
                         <Pill size={13} style={{ color: tone.color }} />
@@ -630,15 +640,8 @@ export default function Lectura() {
                           <p className="text-xs text-muted-foreground mt-0.5">{sup.dosis} · {sup.horario}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">{sup.beneficio}</p>
-                        {linksSuplemento(sup.nombre).map(({ nombre, url }) => (
-                          <a key={url} href={url} target="_blank" rel="noopener noreferrer"
-                            className="mt-1 flex w-fit items-center gap-1 text-xs font-medium underline"
-                            style={{ color: tone.color }}>
-                            Comprar {nombre} <ExternalLink size={12} aria-hidden="true" />
-                          </a>
-                        ))}
                       </div>
-                    </div>
+                    </Tarjeta>
                   )
                 })}
               </div>

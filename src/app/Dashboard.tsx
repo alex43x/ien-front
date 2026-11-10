@@ -3,12 +3,12 @@ import { useNavigate } from "react-router";
 
 import {
   CheckCircle2, Heart, Package, Activity, TrendingUp,
-  BookOpen, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, ShieldCheck, ExternalLink,
+  BookOpen, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, ShieldCheck,
 } from "lucide-react";
 
 import { C } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
-import { linksSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
+import { separarSuplementos, urlSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
 import type { Tone } from "@/constants/colors";
 import TestInicialResultados from "@/components/TestInicialResultados";
 import ActividadesDiariasLista from "@/components/ActividadesDiariasLista";
@@ -105,6 +105,7 @@ function BlockGridItem({ block, isDone, isNow, TODAY, gray }: { block: typeof BL
 }
 
 function SupplementItem({ sup, checked, onToggle, gray }: { sup: any; checked: boolean; onToggle: () => void; gray: GrayColors }) {
+  const url = urlSuplemento(sup.nombre);
   const toneKey = Object.keys(SUPPLEMENT_TONES).find(k => sup.nombre.includes(k)) ?? sup.nombre;
   const st = (SUPPLEMENT_TONES[toneKey] ?? 'green') as Tone;
   const bc = useToneColors(st);
@@ -113,23 +114,23 @@ function SupplementItem({ sup, checked, onToggle, gray }: { sup: any; checked: b
     : Pill;
   return (
     <div
-      className="flex items-center gap-3 p-3 rounded-xl transition-shadow hover:shadow-sm"
+      className={`flex items-center gap-3 p-3 rounded-xl ${url
+        ? "cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        : "transition-shadow hover:shadow-sm"}`}
+      role={url ? "link" : undefined}
+      tabIndex={url ? 0 : undefined}
+      aria-label={url ? `Comprar ${sup.nombre} en The Vitamin Shoppe Paraguay (se abre en otra pestaña)` : undefined}
+      onClick={url ? () => window.open(url, "_blank", "noopener,noreferrer") : undefined}
+      onKeyDown={url ? (e) => {
+        if (e.key === "Enter" && e.target === e.currentTarget) window.open(url, "_blank", "noopener,noreferrer");
+      } : undefined}
       style={{ backgroundColor: checked ? bc.bg : gray.faint }}>
       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ backgroundColor: bc.soft }}>
         <Icon size={14} style={{ color: bc.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1">
-          <p className="text-xs font-semibold text-foreground truncate">{sup.nombre}</p>
-          {linksSuplemento(sup.nombre).map(({ nombre, url }) => (
-            <a key={url} href={url} target="_blank" rel="noopener noreferrer"
-              aria-label={`Comprar ${nombre} en The Vitamin Shoppe`}
-              onClick={(e) => e.stopPropagation()} className="shrink-0" style={{ color: bc.color }}>
-              <ExternalLink size={12} aria-hidden="true" />
-            </a>
-          ))}
-        </div>
+        <p className="text-xs font-semibold text-foreground truncate">{sup.nombre}</p>
         <p className="text-[10px] font-mono text-muted-foreground">{sup.dosis} · {sup.horario}</p>
       </div>
       <button
@@ -483,7 +484,7 @@ export default function Dashboard() {
           </p>
           <p className="text-[10px] text-muted-foreground mb-4">{TEXTO_COMPRA_SUPLEMENTOS}</p>
           <div className="space-y-3 flex-1">
-            {(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => (
+            {separarSuplementos(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => (
               <SupplementItem key={i} sup={sup} checked={!!checked[i]} onToggle={() => setChecked((p) => ({ ...p, [i]: !p[i] }))} gray={gray} />
             ))}
             {(!leccion?.datos_leccion?.suplementacion || leccion.datos_leccion.suplementacion.length === 0) && (
