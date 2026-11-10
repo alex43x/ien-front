@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { ChevronLeft, ChevronDown, ChevronUp, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, BookOpen, ShieldCheck, Pill, CheckSquare, CheckCircle2, Square, Send, Lightbulb, Star, Calculator, ExternalLink } from "lucide-react";
+import { linksSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
 import { useToneColors } from "@/hooks/useToneColors";
 import Secciones from "@/components/ui/Secciones";
 import TablaInfo from "@/components/ui/TablaInfo";
@@ -614,6 +615,7 @@ export default function Lectura() {
               <p className="text-[10px] text-muted-foreground/70 italic mb-4 leading-tight">
                 * Estas son recomendaciones complementarias, siempre consulta a tu médico o nutricionista.
               </p>
+              <p className="text-[10px] text-muted-foreground mb-4">{TEXTO_COMPRA_SUPLEMENTOS}</p>
               <div className="space-y-3">
                 {leccion.datos_leccion.suplementacion.map((sup, idx: number) => {
                   return (
@@ -628,6 +630,13 @@ export default function Lectura() {
                           <p className="text-xs text-muted-foreground mt-0.5">{sup.dosis} · {sup.horario}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">{sup.beneficio}</p>
+                        {linksSuplemento(sup.nombre).map(({ nombre, url }) => (
+                          <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+                            className="mt-1 flex w-fit items-center gap-1 text-xs font-medium underline"
+                            style={{ color: tone.color }}>
+                            Comprar {nombre} <ExternalLink size={12} aria-hidden="true" />
+                          </a>
+                        ))}
                       </div>
                     </div>
                   )

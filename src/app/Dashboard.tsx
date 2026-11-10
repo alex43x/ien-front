@@ -3,11 +3,12 @@ import { useNavigate } from "react-router";
 
 import {
   CheckCircle2, Heart, Package, Activity, TrendingUp,
-  BookOpen, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, ShieldCheck,
+  BookOpen, ChevronDown, ChevronUp, CalendarDays, Flame, Pill, ShieldCheck, ExternalLink,
 } from "lucide-react";
 
 import { C } from "@/constants/colors";
 import { BLOCKS } from "@/constants/program";
+import { linksSuplemento, TEXTO_COMPRA_SUPLEMENTOS } from "@/constants/suplementos";
 import type { Tone } from "@/constants/colors";
 import TestInicialResultados from "@/components/TestInicialResultados";
 import ActividadesDiariasLista from "@/components/ActividadesDiariasLista";
@@ -119,7 +120,16 @@ function SupplementItem({ sup, checked, onToggle, gray }: { sup: any; checked: b
         <Icon size={14} style={{ color: bc.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-foreground truncate">{sup.nombre}</p>
+        <div className="flex items-center gap-1">
+          <p className="text-xs font-semibold text-foreground truncate">{sup.nombre}</p>
+          {linksSuplemento(sup.nombre).map(({ nombre, url }) => (
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer"
+              aria-label={`Comprar ${nombre} en The Vitamin Shoppe`}
+              onClick={(e) => e.stopPropagation()} className="shrink-0" style={{ color: bc.color }}>
+              <ExternalLink size={12} aria-hidden="true" />
+            </a>
+          ))}
+        </div>
         <p className="text-[10px] font-mono text-muted-foreground">{sup.dosis} · {sup.horario}</p>
       </div>
       <button
@@ -471,6 +481,7 @@ export default function Dashboard() {
           <p className="text-[10px] text-muted-foreground/70 italic mb-4 leading-tight">
             * Estas son recomendaciones complementarias, siempre consulta a tu médico o nutricionista.
           </p>
+          <p className="text-[10px] text-muted-foreground mb-4">{TEXTO_COMPRA_SUPLEMENTOS}</p>
           <div className="space-y-3 flex-1">
             {(leccion?.datos_leccion?.suplementacion ?? []).map((sup, i) => (
               <SupplementItem key={i} sup={sup} checked={!!checked[i]} onToggle={() => setChecked((p) => ({ ...p, [i]: !p[i] }))} gray={gray} />
