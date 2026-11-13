@@ -4,3 +4,6 @@ dist
 .git_backup/
 test-results/
 playwright-report/
+
+# Skills/config locales de opencode (no versionar)
+.opencode/
